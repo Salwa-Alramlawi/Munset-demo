@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.claude/
+sessions_db/
+~$*
+NO need/
+*.docx
+index - Copy.html
+stock_analyzer.py
+analysis_2222.html
