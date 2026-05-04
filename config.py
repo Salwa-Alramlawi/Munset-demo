@@ -5,10 +5,11 @@ load_dotenv()
 
 # --- API Keys ---
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-HF_TOKEN = os.getenv("HF_TOKEN", "")  # Hugging Face token for pyannote
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+PYANNOTE_API_KEY = os.getenv("PYANNOTE_API_KEY", "")
 
-# --- Whisper Settings ---
-WHISPER_MODEL = "large-v3"
+# --- Whisper Settings (Groq API) ---
+WHISPER_MODEL = "whisper-large-v3"
 WHISPER_LANGUAGE = "ar"
 
 # --- Claude Settings ---

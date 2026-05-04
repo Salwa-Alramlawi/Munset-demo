@@ -1,4 +1,4 @@
-"""Mudawwin — Streamlit UI for the judicial transcription multi-agent system."""
+"""Munset — Streamlit UI for the judicial transcription multi-agent system."""
 
 import os
 import json
@@ -8,7 +8,7 @@ from session_store import SessionStore
 
 # ---- Page config ----
 st.set_page_config(
-    page_title="مُدوِّن | توثيق الجلسات القضائية",
+    page_title="مُنصِت | توثيق الجلسات القضائية",
     page_icon="⚖️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -123,7 +123,7 @@ def main():
     # ---- Sidebar ----
     with st.sidebar:
         st.image("https://img.icons8.com/fluency/96/law.png", width=60)
-        st.markdown("# ⚖️ مُدوِّن")
+        st.markdown("# ⚖️ مُنصِت")
         st.markdown("**منظومة وكلاء ذكية لتوثيق الجلسات القضائية**")
         st.divider()
 
@@ -147,7 +147,7 @@ def main():
             speaker_map[f"SPEAKER_{i:02d}"] = label
 
     # ---- Main Area ----
-    st.markdown("# ⚖️ مُدوِّن")
+    st.markdown("# ⚖️ مُنصِت")
     st.markdown("### منظومة وكلاء ذكية لتوثيق وتحليل الجلسات القضائية")
     st.markdown("---")
 
@@ -173,9 +173,9 @@ def main():
 
     # ---- Demo Mode ----
     if demo_clicked:
-        from pipeline import MudawwinPipeline
+        from pipeline import MunsetPipeline
 
-        pipeline = MudawwinPipeline()
+        pipeline = MunsetPipeline()
         progress = st.progress(0, text="جاري تجهيز العرض التجريبي...")
 
         def on_step(name, step, total):
@@ -206,9 +206,9 @@ def main():
             tmp.write(uploaded.read())
             tmp.close()
 
-            from pipeline import MudawwinPipeline
+            from pipeline import MunsetPipeline
 
-            pipeline = MudawwinPipeline()
+            pipeline = MunsetPipeline()
             progress = st.progress(0, text="جاري التجهيز...")
 
             def on_step(name, step, total):

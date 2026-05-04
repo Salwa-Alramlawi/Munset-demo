@@ -1,4 +1,4 @@
-"""Mudawwin Pipeline — orchestrates all agents via A2A protocol."""
+"""Munset Pipeline — orchestrates all agents via A2A protocol."""
 
 from __future__ import annotations
 import time
@@ -11,7 +11,7 @@ from agents.qa_agent import QAAgent
 from agents.chatbot_agent import ChatbotAgent
 
 
-class MudawwinPipeline:
+class MunsetPipeline:
     """
     Full pipeline:
     Audio → Transcription Agent → Legal Analysis Agent → Summary Agent → QA Agent

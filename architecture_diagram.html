@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munset Architecture Diagram</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #0a0f1e;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .page-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #22d3ee, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.3rem;
+        }
+        .page-header .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+        .page-header .track-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #fff;
+            padding: 0.3rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+
+        /* ===== MAIN DIAGRAM AREA ===== */
+        .diagram-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* ---- Input Section ---- */
+        .input-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .input-box {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 2px solid #475569;
+            border-radius: 16px;
+            padding: 1.2rem 2.5rem;
+            text-align: center;
+            position: relative;
+        }
+        .input-box .icon { font-size: 2.2rem; }
+        .input-box .label { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin-top: 0.3rem; }
+        .input-box .sub { font-size: 0.75rem; color: #94a3b8; }
+
+        /* ---- Arrow Down ---- */
+        .arrow-down {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #22d3ee;
+            margin: 0.5rem 0;
+            animation: pulseArrow 2s infinite;
+        }
+        @keyframes pulseArrow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* ---- Pipeline (Orchestrator) ---- */
+        .orchestrator {
+            background: linear-gradient(135deg, #0c1929, #162033);
+            border: 2px solid #1e40af;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .orchestrator-title {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .orchestrator-title .line {
+            flex: 1;
+            height: 1px;
+            background: #1e40af;
+        }
+
+        /* ---- Agents Row ---- */
+        .agents-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .agent-card {
+            background: linear-gradient(180deg, #0f172a, #1a2332);
+            border: 2px solid #334155;
+            border-radius: 14px;
+            padding: 1rem 0.6rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .agent-card:hover {
+            border-color: #22d3ee;
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.2);
+            transform: translateY(-4px);
+        }
+        .agent-card .step {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #3b82f6;
+            color: #fff;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .agent-card .agent-icon { font-size: 2rem; margin-bottom: 0.4rem; }
+        .agent-card .agent-name { font-size: 0.85rem; font-weight: 700; color: #22d3ee; margin-bottom: 0.2rem; }
+        .agent-card .agent-name-en { font-size: 0.65rem; color: #64748b; margin-bottom: 0.4rem; }
+        .agent-card .agent-tech {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            background: #1e293b;
+            border-radius: 6px;
+            padding: 0.2rem 0.5rem;
+            display: inline-block;
+        }
+        .agent-card .agent-role {
+            font-size: 0.7rem;
+            color: #cbd5e1;
+            margin-top: 0.4rem;
+            line-height: 1.4;
+        }
+
+        /* ---- A2A Flow Arrows ---- */
+        .a2a-flow {
+            text-align: center;
+            margin: 0.8rem 0;
+            position: relative;
+        }
+        .flow-forward {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+        }
+        .flow-forward .line {
+            height: 3px;
+            flex: 1;
+            background: linear-gradient(90deg, #22d3ee, #3b82f6);
+            border-radius: 2px;
+        }
+        .flow-forward .arrow-label {
+            color: #22d3ee;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .flow-backward {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .flow-backward .line {
+            height: 2px;
+            flex: 1;
+            background: linear-gradient(90deg, #f97316, #ef4444);
+            border-radius: 2px;
+            border-style: dashed;
+        }
+        .flow-backward .arrow-label {
+            color: #f97316;
+            font-size: 0.7rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* ---- External Services ---- */
+        .externals {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+        .external-card {
+            background: #1e293b;
+            border: 1px dashed #475569;
+            border-radius: 12px;
+            padding: 0.8rem;
+            text-align: center;
+        }
+        .external-card .ext-icon { font-size: 1.5rem; }
+        .external-card .ext-name { font-size: 0.8rem; font-weight: 700; color: #f1f5f9; margin-top: 0.2rem; }
+        .external-card .ext-type { font-size: 0.65rem; color: #64748b; }
+
+        /* ---- Output Section ---- */
+        .output-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+        .output-card {
+            background: linear-gradient(135deg, #052e16, #064e3b);
+            border: 1px solid #059669;
+            border-radius: 12px;
+            padding: 0.8rem;
+            text-align: center;
+        }
+        .output-card .out-icon { font-size: 1.3rem; }
+        .output-card .out-name { font-size: 0.8rem; font-weight: 600; color: #6ee7b7; margin-top: 0.2rem; }
+
+        /* ---- A2A Protocol Box ---- */
+        .a2a-protocol-box {
+            margin-top: 2rem;
+            background: linear-gradient(135deg, #1a1033, #1e1145);
+            border: 2px solid #7c3aed;
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        .a2a-protocol-box h3 {
+            text-align: center;
+            color: #a78bfa;
+            margin-bottom: 1rem;
+        }
+        .msg-types {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+        }
+        .msg-type-card {
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid #5b21b6;
+            border-radius: 10px;
+            padding: 0.8rem;
+            text-align: center;
+        }
+        .msg-type-card .mt-icon { font-size: 1.3rem; }
+        .msg-type-card .mt-name { font-size: 0.8rem; font-weight: 700; color: #c4b5fd; margin-top: 0.2rem; }
+        .msg-type-card .mt-desc { font-size: 0.65rem; color: #94a3b8; margin-top: 0.2rem; }
+        .msg-type-card .mt-dir {
+            font-size: 0.6rem;
+            color: #7c3aed;
+            margin-top: 0.3rem;
+            font-weight: 700;
+        }
+
+        /* ---- Legend ---- */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* ---- Memory Section ---- */
+        .memory-section {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+        .memory-box {
+            background: linear-gradient(135deg, #1c1917, #292524);
+            border: 1px solid #78716c;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            text-align: center;
+        }
+        .memory-box .mem-icon { font-size: 1.5rem; }
+        .memory-box .mem-name { font-size: 0.85rem; font-weight: 700; color: #fbbf24; }
+        .memory-box .mem-desc { font-size: 0.7rem; color: #a8a29e; }
+
+        .section-label {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 1rem 0 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Print styles */
+        @media print {
+            body { background: #fff; color: #1e293b; padding: 1rem; }
+            .agent-card, .external-card, .output-card, .msg-type-card { border-color: #ccc; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <h1>Munset Architecture</h1>
+    <div class="subtitle">Multi-Agent System for Judicial Session Documentation & Analysis</div>
+    <div class="track-badge">Track 04: Agent-to-Agent (A2A)</div>
+</div>
+
+<div class="diagram-container">
+
+    <!-- INPUT -->
+    <div class="section-label">INPUT</div>
+    <div class="input-section">
+        <div class="input-box">
+            <div class="icon">🎙️</div>
+            <div class="label">Court Session Audio Recording</div>
+            <div class="sub">MP3 / WAV / M4A / OGG / FLAC</div>
+        </div>
+    </div>
+
+    <div class="arrow-down">&#8595;</div>
+
+    <!-- ORCHESTRATOR + AGENTS -->
+    <div class="orchestrator">
+        <div class="orchestrator-title">
+            <span class="line"></span>
+            A2A Orchestration Pipeline (MunsetPipeline)
+            <span class="line"></span>
+        </div>
+
+        <!-- Agents -->
+        <div class="agents-row">
+            <div class="agent-card">
+                <div class="step">1</div>
+                <div class="agent-icon">🎙️</div>
+                <div class="agent-name">Transcription Agent</div>
+                <div class="agent-name-en">وكيل التفريغ الصوتي</div>
+                <div class="agent-tech">Whisper + pyannote</div>
+                <div class="agent-role">Speech-to-Text + Speaker Diarization</div>
+            </div>
+            <div class="agent-card">
+                <div class="step">2</div>
+                <div class="agent-icon">&#9878;&#65039;</div>
+                <div class="agent-name">Legal Analysis Agent</div>
+                <div class="agent-name-en">وكيل التحليل القانوني</div>
+                <div class="agent-tech">Claude API</div>
+                <div class="agent-role">Claims, Defenses, Evidence, Contradictions</div>
+            </div>
+            <div class="agent-card">
+                <div class="step">3</div>
+                <div class="agent-icon">📝</div>
+                <div class="agent-name">Summary Agent</div>
+                <div class="agent-name-en">وكيل التلخيص</div>
+                <div class="agent-tech">Claude API</div>
+                <div class="agent-role">Structured Minutes + Executive Summary</div>
+            </div>
+            <div class="agent-card">
+                <div class="step">4</div>
+                <div class="agent-icon">&#9989;</div>
+                <div class="agent-name">QA Agent</div>
+                <div class="agent-name-en">وكيل مراجعة الجودة</div>
+                <div class="agent-tech">Claude API</div>
+                <div class="agent-role">Completeness, Accuracy, Contradictions</div>
+            </div>
+            <div class="agent-card">
+                <div class="step">5</div>
+                <div class="agent-icon">💬</div>
+                <div class="agent-name">Chatbot Agent</div>
+                <div class="agent-name-en">المساعد التفاعلي</div>
+                <div class="agent-tech">Claude API</div>
+                <div class="agent-role">Interactive Q&A over session data</div>
+            </div>
+        </div>
+
+        <!-- A2A Flow -->
+        <div class="a2a-flow">
+            <div class="flow-forward">
+                <span class="arrow-label">&#8592;</span>
+                <div class="line"></div>
+                <span class="arrow-label">Forward Data Flow (A2A Messages)</span>
+                <div class="line"></div>
+                <span class="arrow-label">&#8594;</span>
+            </div>
+            <div class="flow-backward">
+                <span class="arrow-label">&#8594;</span>
+                <div class="line" style="border: 1px dashed #f97316; background: none;"></div>
+                <span class="arrow-label">Bidirectional: QA Feedback & Clarification Requests</span>
+                <div class="line" style="border: 1px dashed #f97316; background: none;"></div>
+                <span class="arrow-label">&#8592;</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXTERNAL APIs & TOOLS -->
+    <div class="section-label">EXTERNAL APIS & TOOLS</div>
+    <div class="externals">
+        <div class="external-card">
+            <div class="ext-icon">🤖</div>
+            <div class="ext-name">Claude API</div>
+            <div class="ext-type">LLM — Anthropic</div>
+        </div>
+        <div class="external-card">
+            <div class="ext-icon">🗣️</div>
+            <div class="ext-name">Whisper large-v3</div>
+            <div class="ext-type">ASR — OpenAI</div>
+        </div>
+        <div class="external-card">
+            <div class="ext-icon">👥</div>
+            <div class="ext-name">pyannote 3.1</div>
+            <div class="ext-type">Speaker Diarization</div>
+        </div>
+        <div class="external-card">
+            <div class="ext-icon">💾</div>
+            <div class="ext-name">Session Store</div>
+            <div class="ext-type">File-based JSON DB</div>
+        </div>
+    </div>
+
+    <!-- MEMORY -->
+    <div class="memory-section">
+        <div class="memory-box">
+            <div class="mem-icon">🗄️</div>
+            <div class="mem-name">Session Memory (Cross-Session)</div>
+            <div class="mem-desc">Stores past sessions per case — enables cross-session contradiction detection & case history tracking</div>
+        </div>
+    </div>
+
+    <!-- OUTPUTS -->
+    <div class="section-label">OUTPUTS</div>
+    <div class="output-section">
+        <div class="output-card">
+            <div class="out-icon">📄</div>
+            <div class="out-name">Structured Transcript with Speaker IDs</div>
+        </div>
+        <div class="output-card">
+            <div class="out-icon">&#9878;&#65039;</div>
+            <div class="out-name">Legal Analysis (Claims, Defenses, Evidence, Contradictions)</div>
+        </div>
+        <div class="output-card">
+            <div class="out-icon">📝</div>
+            <div class="out-name">Official Session Minutes + Executive Summary</div>
+        </div>
+        <div class="output-card">
+            <div class="out-icon">&#9989;</div>
+            <div class="out-name">Quality Report (Completeness Score + Issues)</div>
+        </div>
+    </div>
+
+    <!-- A2A PROTOCOL DETAIL -->
+    <div class="a2a-protocol-box">
+        <h3>A2A Protocol — Message Types & Bidirectional Communication</h3>
+        <div class="msg-types">
+            <div class="msg-type-card">
+                <div class="mt-icon">📨</div>
+                <div class="mt-name">Data Message</div>
+                <div class="mt-desc">Primary data flow between agents in the pipeline</div>
+                <div class="mt-dir">Agent N &#8594; Agent N+1</div>
+            </div>
+            <div class="msg-type-card">
+                <div class="mt-icon">&#128257;</div>
+                <div class="mt-name">Clarification Request</div>
+                <div class="mt-desc">Downstream agent asks upstream agent for clarification</div>
+                <div class="mt-dir">QA Agent &#8594; Legal Analysis Agent</div>
+            </div>
+            <div class="msg-type-card">
+                <div class="mt-icon">💬</div>
+                <div class="mt-name">Quality Feedback</div>
+                <div class="mt-desc">QA Agent sends improvement notes to upstream agents</div>
+                <div class="mt-dir">QA Agent &#8594; Summary Agent</div>
+            </div>
+            <div class="msg-type-card">
+                <div class="mt-icon">&#128196;</div>
+                <div class="mt-name">Response</div>
+                <div class="mt-desc">Agent replies to a data request or clarification</div>
+                <div class="mt-dir">Agent N &#8592; Agent N+1</div>
+            </div>
+            <div class="msg-type-card">
+                <div class="mt-icon">&#128279;</div>
+                <div class="mt-name">Conversation Chain</div>
+                <div class="mt-desc">Messages linked via parent_id for full traceability</div>
+                <div class="mt-dir">Traced via msg_id &#8596; parent_id</div>
+            </div>
+            <div class="msg-type-card">
+                <div class="mt-icon">📊</div>
+                <div class="mt-name">Stats & Logging</div>
+                <div class="mt-desc">Per-agent message counts, types, and full audit trail</div>
+                <div class="mt-dir">Protocol &#8594; UI Dashboard</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #3b82f6;"></div>
+            Forward data flow
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #f97316;"></div>
+            Bidirectional feedback / clarification
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #7c3aed;"></div>
+            A2A Protocol layer
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #059669;"></div>
+            Outputs
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #475569; border: 1px dashed #94a3b8;"></div>
+            External services
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
