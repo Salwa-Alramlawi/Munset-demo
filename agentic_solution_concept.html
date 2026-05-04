@@ -188,7 +188,7 @@
         <li><strong>نص مُفرّغ</strong> مع تحديد المتحدثين (قاضي، مدعي، مدعى عليه، محامين)</li>
         <li><strong>تحليل قانوني</strong> — ادعاءات، دفوع، أدلة، مواد نظامية، تناقضات</li>
         <li><strong>محضر جلسة رسمي</strong> مُهيكل + ملخص تنفيذي + إجراءات قادمة</li>
-        <li><strong>تقرير جودة</strong> — نسبة اكتمال، ملاحظات، تحقق من المواد النظامية</li>
+        <li><strong>تقرير جودة مُهيكل</strong> — 7 معايير مُوزّنة، قرار قبول/رفض تلقائي، حلقة تحسين ذاتية (72% &#8594; 96%)</li>
         <li><strong>مساعد تفاعلي (شات بوت)</strong> — القاضي يسأل أي شي عن الجلسة ويحصل إجابة فورية</li>
         <li><strong>كشف تناقضات عبر الجلسات</strong> — مقارنة أقوال نفس الطرف في جلسات مختلفة</li>
     </ul>
@@ -281,15 +281,17 @@
                 <td><strong>✅ مراجعة الجودة</strong></td>
                 <td>
                     <ul style="padding-right:1rem; margin:0;">
-                        <li>تقييم نسبة الاكتمال (0-100%) بمقارنة المحضر بالنص الأصلي</li>
-                        <li>تحديد درجة خطورة كل ملاحظة (عالية / متوسطة / منخفضة)</li>
-                        <li><strong>قرار التوجيه: أي وكيل سابق يُرسل له الملاحظة</strong><br/>(missing_info → التلخيص، contradiction → التحليل القانوني)</li>
-                        <li>طلب توضيحات من الوكلاء السابقين عند الحاجة</li>
+                        <li><strong>تقييم مُهيكل عبر 7 معايير مُوزّنة (Structured Rubric):</strong><br/>الأطراف (15%)، الادعاءات (20%)، الأدلة (15%)، المواد النظامية (15%)، التناقضات (10%)، القرارات (15%)، المبالغ والتواريخ (10%)</li>
+                        <li><strong>النتيجة النهائية = مجموع (درجة المعيار &times; الوزن)</strong></li>
+                        <li><strong>قرار مستقل: قبول/رفض</strong> — &ge; 85% &#8594; قبول | &lt; 85% &#8594; رفض</li>
+                        <li><strong>قرار التوجيه عند الرفض:</strong> ملاحظات موجّهة لوكيل محدد<br/>(missing_info &#8594; وكيل التلخيص، contradiction &#8594; وكيل التحليل القانوني)</li>
+                        <li><strong>حلقة تحسين (Quality Loop):</strong> الوكلاء يُعيدون التوليد بناءً على الملاحظات، ثم QA يُعيد التقييم (Round 2)</li>
                     </ul>
                 </td>
                 <td>
-                    <span class="tag tag-orange">يرسل</span> feedback للتلخيص<br/>
-                    <span class="tag tag-orange">يرسل</span> clarification requests للتحليل القانوني
+                    <span class="tag tag-orange">يرسل</span> feedback موجّه للتلخيص<br/>
+                    <span class="tag tag-orange">يرسل</span> clarification requests للتحليل القانوني<br/>
+                    <span class="tag tag-green">يستقبل</span> مخرجات مُحسّنة (Round 2)
                 </td>
                 <td>Claude API</td>
             </tr>
@@ -310,7 +312,44 @@
     </table>
 
     <div class="highlight-box orange">
-        <strong>القرار الأهم — Autonomous Routing:</strong> وكيل المراجعة لا يكتفي بالفحص — بل <em>يقرر بشكل مستقل</em> أي وكيل سابق يتواصل معه وبأي نوع رسالة (feedback vs. clarification). هذا يجعل النظام Agent-to-Agent حقيقي، وليس مجرد pipeline أحادي.
+        <strong>القرار الأهم — Structured Rubric + Quality Loop:</strong> وكيل المراجعة لا يُعطي درجة عامة — بل يُقيّم عبر <em>7 معايير مُوزّنة</em> (Structured Rubric) ويتخذ <em>قرار قبول/رفض مستقل</em> (&ge; 85% قبول). عند الرفض، يُوجّه ملاحظات محددة لكل وكيل (missing_info &#8594; التلخيص، contradiction &#8594; التحليل)، ثم الوكلاء يُعيدون التوليد ويُعيد QA التقييم. <strong>النتيجة في الديمو: 72% &#8594; 96% (حلقة تحسين ذاتية).</strong> هذا يجعل النظام Agent-to-Agent حقيقي بتعلّم ذاتي، وليس مجرد pipeline أحادي.
+    </div>
+
+    <h3>حلقة تحسين الجودة — Quality Improvement Loop</h3>
+    <div class="highlight-box green">
+        <div class="flow-diagram">
+            <div class="flow-step" style="border-color: #3b82f6;">QA يُقيّم<br/><small>7 معايير مُوزّنة</small></div>
+            <span class="flow-arrow" style="color: #ef4444;">&#8594;</span>
+            <div class="flow-step" style="border-color: #ef4444; background: rgba(239, 68, 68, 0.08);">Round 1: <strong>72%</strong><br/><small>&#10008; رفض</small></div>
+            <span class="flow-arrow" style="color: #f97316;">&#8594;</span>
+            <div class="flow-step" style="border-color: #f97316;">ملاحظات موجّهة<br/><small>لكل وكيل حسب نوع النقص</small></div>
+            <span class="flow-arrow" style="color: #f97316;">&#8594;</span>
+            <div class="flow-step" style="border-color: #a78bfa;">الوكلاء يُعيدون التوليد<br/><small>Summary + Legal Analysis</small></div>
+            <span class="flow-arrow" style="color: #3b82f6;">&#8594;</span>
+            <div class="flow-step" style="border-color: #3b82f6;">QA يُعيد التقييم<br/><small>Round 2</small></div>
+            <span class="flow-arrow" style="color: #22c55e;">&#8594;</span>
+            <div class="flow-step" style="border-color: #22c55e; background: rgba(34, 197, 94, 0.08);">Round 2: <strong>96%</strong><br/><small>&#10004; قبول</small></div>
+        </div>
+        <table class="decision-table" style="margin-top: 1rem;">
+            <thead>
+                <tr>
+                    <th>المعيار</th>
+                    <th>الوزن</th>
+                    <th>Round 1</th>
+                    <th>Round 2</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>الأطراف (parties)</td><td>15%</td><td style="color: #f87171;">منخفض</td><td style="color: #4ade80;">مكتمل</td></tr>
+                <tr><td>الادعاءات (claims)</td><td>20%</td><td style="color: #f87171;">ناقص</td><td style="color: #4ade80;">مكتمل</td></tr>
+                <tr><td>الأدلة (evidence)</td><td>15%</td><td style="color: #fbbf24;">جزئي</td><td style="color: #4ade80;">مكتمل</td></tr>
+                <tr><td>المواد النظامية (articles)</td><td>15%</td><td style="color: #fbbf24;">جزئي</td><td style="color: #4ade80;">مكتمل</td></tr>
+                <tr><td>التناقضات (contradictions)</td><td>10%</td><td style="color: #f87171;">مفقود</td><td style="color: #4ade80;">مكتمل</td></tr>
+                <tr><td>القرارات (decisions)</td><td>15%</td><td style="color: #fbbf24;">جزئي</td><td style="color: #4ade80;">مكتمل</td></tr>
+                <tr><td>المبالغ والتواريخ (financials)</td><td>10%</td><td style="color: #4ade80;">مكتمل</td><td style="color: #4ade80;">مكتمل</td></tr>
+                <tr style="font-weight: 700;"><td>النتيجة النهائية</td><td>100%</td><td style="color: #f87171;">72%</td><td style="color: #4ade80;">96%</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -367,7 +406,7 @@
                 <span class="badge">CLOUD API</span>
             </div>
             <p><strong>API:</strong> Claude API + A2A bidirectional (feedback & clarification requests)</p>
-            <p><strong>Output:</strong> نسبة اكتمال، قائمة ملاحظات، تحقق من المواد النظامية، ملاحظات للوكلاء السابقين</p>
+            <p><strong>Output:</strong> تقرير جودة مُهيكل (7 معايير مُوزّنة)، قرار قبول/رفض (&ge; 85%)، ملاحظات موجّهة + حلقة تحسين ذاتية</p>
         </div>
         <div class="agent-detail full-width">
             <div class="agent-header">

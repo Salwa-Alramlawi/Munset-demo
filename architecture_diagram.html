@@ -244,6 +244,64 @@
             margin-top: 0.3rem;
         }
 
+        /* Quality Loop */
+        .quality-loop-section {
+            margin-top: 2rem;
+            background: linear-gradient(135deg, #1a0f0a, #2a1a10);
+            border: 2px solid #f97316;
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        .quality-loop-section h3 {
+            text-align: center;
+            color: #fb923c;
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+        .loop-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .loop-step {
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 0.6rem 0.9rem;
+            text-align: center;
+            font-size: 0.78rem;
+            color: #e2e8f0;
+        }
+        .loop-step.reject { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        .loop-step.accept { border-color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+        .loop-arrow { color: #f97316; font-size: 1.2rem; font-weight: 700; }
+        .loop-arrow.green { color: #22c55e; }
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.4rem;
+            margin-top: 0.8rem;
+        }
+        .criteria-item {
+            background: rgba(249, 115, 22, 0.08);
+            border: 1px solid rgba(249, 115, 22, 0.25);
+            border-radius: 8px;
+            padding: 0.4rem 0.3rem;
+            text-align: center;
+        }
+        .criteria-item .cr-name { font-size: 0.65rem; color: #fb923c; font-weight: 700; }
+        .criteria-item .cr-weight { font-size: 0.6rem; color: #94a3b8; }
+        .loop-summary {
+            text-align: center;
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        .loop-summary strong { color: #f1f5f9; }
+
         @media print {
             body { background: #fff; color: #1e293b; padding: 1rem; }
             .agent-card, .external-card, .output-card, .msg-type-card { border-color: #ccc; }
@@ -316,7 +374,7 @@
                 <div class="agent-name-ar">وكيل مراجعة الجودة</div>
                 <div class="agent-tech">Claude API</div>
                 <div class="cloud-badge">CLOUD API</div>
-                <div class="agent-role">Completeness, Accuracy, Feedback to upstream</div>
+                <div class="agent-role">Structured Rubric (7 weighted criteria) + Quality Loop</div>
             </div>
             <div class="agent-card">
                 <div class="step">5</div>
@@ -397,7 +455,38 @@
         </div>
         <div class="output-card">
             <div class="out-icon">&#9989;</div>
-            <div class="out-name">تقرير جودة (نسبة اكتمال + ملاحظات)</div>
+            <div class="out-name">تقرير جودة مُهيكل (7 معايير مُوزّنة)</div>
+        </div>
+    </div>
+
+    <!-- QUALITY IMPROVEMENT LOOP -->
+    <div class="quality-loop-section">
+        <h3>Quality Improvement Loop — حلقة تحسين الجودة</h3>
+        <div class="loop-flow">
+            <div class="loop-step">QA Agent يُقيّم<br/><small>7 معايير مُوزّنة</small></div>
+            <span class="loop-arrow">&#8594;</span>
+            <div class="loop-step reject">Round 1: 72%<br/><small>&#10008; رفض (&lt; 85%)</small></div>
+            <span class="loop-arrow">&#8594;</span>
+            <div class="loop-step">ملاحظات موجّهة<br/><small>missing_info &#8594; التلخيص<br/>contradiction &#8594; التحليل</small></div>
+            <span class="loop-arrow">&#8594;</span>
+            <div class="loop-step">الوكلاء يُعيدون التوليد<br/><small>بناءً على الملاحظات</small></div>
+            <span class="loop-arrow">&#8594;</span>
+            <div class="loop-step">QA يُعيد التقييم<br/><small>Round 2</small></div>
+            <span class="loop-arrow green">&#8594;</span>
+            <div class="loop-step accept">Round 2: 96%<br/><small>&#10004; قبول (&#8805; 85%)</small></div>
+        </div>
+        <div class="criteria-grid">
+            <div class="criteria-item"><div class="cr-name">الأطراف</div><div class="cr-weight">15%</div></div>
+            <div class="criteria-item"><div class="cr-name">الادعاءات</div><div class="cr-weight">20%</div></div>
+            <div class="criteria-item"><div class="cr-name">الأدلة</div><div class="cr-weight">15%</div></div>
+            <div class="criteria-item"><div class="cr-name">المواد النظامية</div><div class="cr-weight">15%</div></div>
+            <div class="criteria-item"><div class="cr-name">التناقضات</div><div class="cr-weight">10%</div></div>
+            <div class="criteria-item"><div class="cr-name">القرارات</div><div class="cr-weight">15%</div></div>
+            <div class="criteria-item"><div class="cr-name">المبالغ والتواريخ</div><div class="cr-weight">10%</div></div>
+        </div>
+        <div class="loop-summary">
+            <strong>النتيجة النهائية = مجموع (درجة المعيار &times; الوزن)</strong> &nbsp;|&nbsp;
+            &#8805; 85% &#8594; قبول &nbsp;|&nbsp; &lt; 85% &#8594; رفض + ملاحظات موجّهة &#8594; إعادة توليد
         </div>
     </div>
 
