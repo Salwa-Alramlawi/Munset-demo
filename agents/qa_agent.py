@@ -1,4 +1,5 @@
 """Agent 4 — QA Agent: reviews the session record for quality and completeness.
+Uses a structured rubric with weighted criteria for transparent, reproducible scoring.
 Acts as a gatekeeper — rejects and requests re-generation if quality is below threshold."""
 
 from __future__ import annotations
@@ -12,45 +13,80 @@ import config
 
 QUALITY_THRESHOLD = 85
 
-SYSTEM_PROMPT = """أنت مراجع جودة متخصص في محاضر الجلسات القضائية.
+RUBRIC = [
+    {"id": "parties",     "name": "ذكر جميع الأطراف وأسمائهم ووكلائهم", "weight": 15},
+    {"id": "claims",      "name": "اكتمال الادعاءات والدفوع",           "weight": 20},
+    {"id": "evidence",    "name": "ذكر الأدلة والمستندات",              "weight": 15},
+    {"id": "articles",    "name": "دقة المواد النظامية وانطباقها",       "weight": 15},
+    {"id": "contradictions", "name": "رصد التناقضات بين الأطراف",       "weight": 10},
+    {"id": "decisions",   "name": "قرارات المحكمة والإجراءات",          "weight": 15},
+    {"id": "financials",  "name": "دقة المبالغ والتواريخ",              "weight": 10},
+]
 
-مهمتك مراجعة المحضر المُنتَج والتحقق من:
+RUBRIC_TEXT = "\n".join(
+    f"  {i+1}. **{c['name']}** — الوزن: {c['weight']}% (المعرّف: {c['id']})"
+    for i, c in enumerate(RUBRIC)
+)
 
-1. **اكتمال المعلومات**: هل يحتوي المحضر على كل ما ذُكر في النص الأصلي؟
-2. **دقة الإشارات النظامية**: هل المواد النظامية المذكورة صحيحة ومناسبة؟
-3. **تناقضات الأقوال**: هل يوجد تناقض في أقوال أي طرف؟
-4. **معلومات مفقودة**: هل فاتت أي نقطة جوهرية؟
+SYSTEM_PROMPT = f"""أنت مراجع جودة متخصص في محاضر الجلسات القضائية.
 
-أجب بصيغة JSON:
-{
-    "completeness_score": 0-100,
+مهمتك مراجعة المحضر المُنتَج مقابل النص الأصلي باستخدام معايير التقييم التالية:
+
+{RUBRIC_TEXT}
+
+لكل معيار، قيّم نسبة الاستيفاء (0-100) ثم تُحسب الدرجة النهائية تلقائياً بضرب النسبة في الوزن.
+
+أجب بصيغة JSON فقط:
+{{
+    "criteria_scores": {{
+        "parties": {{"score": 0-100, "notes": "ملاحظة مختصرة"}},
+        "claims": {{"score": 0-100, "notes": "..."}},
+        "evidence": {{"score": 0-100, "notes": "..."}},
+        "articles": {{"score": 0-100, "notes": "..."}},
+        "contradictions": {{"score": 0-100, "notes": "..."}},
+        "decisions": {{"score": 0-100, "notes": "..."}},
+        "financials": {{"score": 0-100, "notes": "..."}}
+    }},
     "issues": [
-        {
+        {{
             "type": "missing_info | contradiction | inaccuracy | suggestion",
+            "criterion": "معرّف المعيار المتأثر",
             "description": "وصف المشكلة",
             "severity": "high | medium | low"
-        }
+        }}
     ],
     "verified_articles": ["المواد النظامية التي تم التحقق منها"],
     "overall_assessment": "تقييم عام مختصر"
-}"""
+}}"""
 
-IMPROVEMENT_PROMPT = """أنت مراجع جودة متخصص في محاضر الجلسات القضائية.
+IMPROVEMENT_PROMPT = f"""أنت مراجع جودة متخصص في محاضر الجلسات القضائية.
 
 هذه الجولة الثانية من المراجعة. المحضر والتحليل تمت إعادة إنتاجهما بعد ملاحظاتك السابقة.
 
 ملاحظاتك السابقة كانت:
-{previous_issues}
+{{previous_issues}}
 
-راجع المحضر المُحدَّث وقدّم تقرير جودة جديد. تحقق بالذات من أن الملاحظات السابقة تم معالجتها.
+راجع المحضر المُحدَّث باستخدام نفس معايير التقييم:
+
+{RUBRIC_TEXT}
+
+تحقق بالذات من أن الملاحظات السابقة تم معالجتها.
 
 أجب بنفس صيغة JSON:
-{{
-    "completeness_score": 0-100,
+{{{{
+    "criteria_scores": {{{{
+        "parties": {{{{"score": 0-100, "notes": "..."}}}},
+        "claims": {{{{"score": 0-100, "notes": "..."}}}},
+        "evidence": {{{{"score": 0-100, "notes": "..."}}}},
+        "articles": {{{{"score": 0-100, "notes": "..."}}}},
+        "contradictions": {{{{"score": 0-100, "notes": "..."}}}},
+        "decisions": {{{{"score": 0-100, "notes": "..."}}}},
+        "financials": {{{{"score": 0-100, "notes": "..."}}}}
+    }}}},
     "issues": [...],
     "verified_articles": [...],
     "overall_assessment": "..."
-}}"""
+}}}}"""
 
 
 class QAAgent(BaseAgent):
@@ -61,8 +97,23 @@ class QAAgent(BaseAgent):
         super().__init__("qa_agent", protocol)
         self.client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
 
+    @staticmethod
+    def compute_weighted_score(criteria_scores: dict) -> tuple[int, dict]:
+        """Compute final score from per-criterion scores using RUBRIC weights.
+        Returns (total_score, breakdown_dict)."""
+        weight_map = {c["id"]: c["weight"] for c in RUBRIC}
+        breakdown = {}
+        total = 0.0
+        for cid, weight in weight_map.items():
+            entry = criteria_scores.get(cid, {})
+            raw = entry.get("score", 0) if isinstance(entry, dict) else 0
+            weighted = round(raw * weight / 100, 1)
+            breakdown[cid] = {"raw_score": raw, "weight": weight, "weighted_score": weighted}
+            total += weighted
+        return round(total), breakdown
+
     def review(self, transcript: str, summary: str, legal_analysis: dict, previous_issues: str | None = None) -> dict:
-        """Review the summary against the original transcript."""
+        """Review the summary against the original transcript using structured rubric."""
         analysis_text = json.dumps(legal_analysis, ensure_ascii=False, indent=2)
 
         if previous_issues:
@@ -81,7 +132,7 @@ class QAAgent(BaseAgent):
                         f"## النص الأصلي المُفرّغ:\n{transcript}\n\n"
                         f"## التحليل القانوني:\n{analysis_text}\n\n"
                         f"## المحضر المُنتَج:\n{summary}\n\n"
-                        "راجع المحضر وقدّم تقرير الجودة."
+                        "راجع المحضر وقدّم تقرير الجودة حسب معايير التقييم."
                     ),
                 }
             ],
@@ -93,12 +144,19 @@ class QAAgent(BaseAgent):
                 raw = raw.split("```json")[1].split("```")[0]
             elif "```" in raw:
                 raw = raw.split("```")[1].split("```")[0]
-            return json.loads(raw.strip())
+            result = json.loads(raw.strip())
         except json.JSONDecodeError:
             return {"raw_review": raw, "parse_error": True}
 
+        criteria_scores = result.get("criteria_scores", {})
+        total_score, breakdown = self.compute_weighted_score(criteria_scores)
+        result["completeness_score"] = total_score
+        result["score_breakdown"] = breakdown
+        result["rubric"] = [{"id": c["id"], "name": c["name"], "weight": c["weight"]} for c in RUBRIC]
+        return result
+
     def decide_action(self, qa_result: dict) -> str:
-        """Autonomous decision: accept or reject the session record."""
+        """Autonomous decision: accept or reject based on weighted score."""
         score = qa_result.get("completeness_score", 0)
         if score >= QUALITY_THRESHOLD:
             return "accept"

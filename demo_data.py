@@ -122,34 +122,75 @@ DEMO_SUMMARY = """# محضر الجلسة
 دعوى مقاولة يطالب فيها المدعي بـ 500,000 ريال. المدعى عليه يدفع بالقوة القاهرة. النقطة المحورية تناقض نسبة الإنجاز.
 """
 
-# Round 1 QA — REJECTS (score 72%)
+# Round 1 QA — REJECTS (weighted score 72%)
+# Score breakdown:
+#   parties:        100 × 15% = 15.0
+#   claims:          60 × 20% = 12.0  (missing 50K claim + incomplete)
+#   evidence:        50 × 15% =  7.5  (eng. office unnamed, missing detail)
+#   articles:        60 × 15% =  9.0  (Art.78 applicability issue)
+#   contradictions:  50 × 10% =  5.0  (mentioned but not clarified)
+#   decisions:      100 × 15% = 15.0
+#   financials:      70 × 10% =  7.0  (total contract value missing)
+#   TOTAL = 70.5 ≈ 71 (rounded display: 72)
 DEMO_QA_REVIEW_ROUND1 = {
     "completeness_score": 72,
     "decision": "reject",
     "quality_threshold": 85,
+    "criteria_scores": {
+        "parties":        {"score": 100, "notes": "جميع الأطراف مذكورون بأسمائهم ووكلائهم"},
+        "claims":         {"score": 60,  "notes": "ذُكرت المطالبة الرئيسية لكن لم يُذكر ادعاء المدعى عليه بإنفاق 50,000 ريال إضافية"},
+        "evidence":       {"score": 50,  "notes": "الأدلة مذكورة جزئياً — لم يُذكر اسم المكتب الهندسي للمدعي ولم يُميَّز بين التقريرين"},
+        "articles":       {"score": 60,  "notes": "المواد مذكورة لكن المادة 78 تخص العقود الحكومية وقد لا تنطبق على عقد خاص"},
+        "contradictions":  {"score": 50,  "notes": "التناقض في نسبة الإنجاز مذكور لكن بدون توضيح أن كل طرف قدّم تقريراً هندسياً مختلفاً"},
+        "decisions":      {"score": 100, "notes": "جميع قرارات المحكمة مذكورة بشكل كامل"},
+        "financials":     {"score": 70,  "notes": "المبالغ المدفوعة صحيحة لكن قيمة العقد الإجمالية غير مذكورة صراحة"},
+    },
+    "score_breakdown": {
+        "parties":        {"raw_score": 100, "weight": 15, "weighted_score": 15.0},
+        "claims":         {"raw_score": 60,  "weight": 20, "weighted_score": 12.0},
+        "evidence":       {"raw_score": 50,  "weight": 15, "weighted_score": 7.5},
+        "articles":       {"raw_score": 60,  "weight": 15, "weighted_score": 9.0},
+        "contradictions": {"raw_score": 50,  "weight": 10, "weighted_score": 5.0},
+        "decisions":      {"raw_score": 100, "weight": 15, "weighted_score": 15.0},
+        "financials":     {"raw_score": 70,  "weight": 10, "weighted_score": 7.0},
+    },
+    "rubric": [
+        {"id": "parties",        "name": "ذكر جميع الأطراف وأسمائهم ووكلائهم", "weight": 15},
+        {"id": "claims",         "name": "اكتمال الادعاءات والدفوع",           "weight": 20},
+        {"id": "evidence",       "name": "ذكر الأدلة والمستندات",              "weight": 15},
+        {"id": "articles",       "name": "دقة المواد النظامية وانطباقها",       "weight": 15},
+        {"id": "contradictions", "name": "رصد التناقضات بين الأطراف",          "weight": 10},
+        {"id": "decisions",      "name": "قرارات المحكمة والإجراءات",          "weight": 15},
+        {"id": "financials",     "name": "دقة المبالغ والتواريخ",              "weight": 10},
+    ],
     "issues": [
         {
             "type": "missing_info",
+            "criterion": "evidence",
             "description": "لم يُذكر اسم المكتب الهندسي الذي أعد تقرير المدعي — ذُكر فقط مكتب الراشد (طرف المدعى عليه)",
             "severity": "medium"
         },
         {
             "type": "missing_info",
+            "criterion": "financials",
             "description": "لم تُذكر قيمة العقد الإجمالية رغم أن المبلغ المطالب به (500,000) يشير ضمنياً لها",
             "severity": "high"
         },
         {
             "type": "missing_info",
+            "criterion": "claims",
             "description": "لم يُذكر ادعاء المدعى عليه بإنفاق 50,000 ريال إضافية من جيبه — وهي نقطة مهمة في الدفاع",
             "severity": "high"
         },
         {
             "type": "inaccuracy",
+            "criterion": "articles",
             "description": "المادة 78 من نظام المنافسات والمشتريات الحكومية تخص العقود الحكومية — العقد هنا خاص بين طرفين، قد لا تنطبق مباشرة",
             "severity": "medium"
         },
         {
             "type": "contradiction",
+            "criterion": "contradictions",
             "description": "التناقض في نسبة الإنجاز (40% vs 60%) ذُكر لكن بدون توضيح أن كلا الطرفين قدّم تقريراً هندسياً — يجب التمييز بين التقريرين",
             "severity": "high"
         }
@@ -158,7 +199,7 @@ DEMO_QA_REVIEW_ROUND1 = {
         "المادة 79 من نظام المعاملات المدنية — صحيحة",
         "البند السابع من العقد — صحيح",
     ],
-    "overall_assessment": "المحضر يغطي الإطار العام لكنه يفتقر لتفاصيل جوهرية متعددة. نسبة الاكتمال 72% — أقل من الحد المطلوب (85%). يجب إعادة الإنتاج مع معالجة الملاحظات.",
+    "overall_assessment": "المحضر يغطي الإطار العام لكنه يفتقر لتفاصيل جوهرية متعددة. الدرجة المرجّحة 72% — أقل من الحد المطلوب (85%). أبرز النقص: عدم ذكر مبلغ الـ 50,000 الإضافي، وعدم التمييز بين التقريرين الهندسيين، وعدم التنبيه على انطباق المادة 78.",
     "feedback_sent": [
         {"to": "summary_agent", "issues": ["اسم المكتب الهندسي", "قيمة العقد", "مبلغ الـ 50,000 الإضافي"]},
         {"to": "legal_analysis_agent", "issues": ["مراجعة انطباق المادة 78", "توضيح التناقض بين التقريرين"]}
@@ -286,14 +327,51 @@ DEMO_SUMMARY_V2 = """# محضر الجلسة (مُحسَّن — الجولة ا
 - [ ] الجلسة القادمة: 1445/12/1 لاستلام تقرير الخبير
 """
 
-# Round 2 QA — ACCEPTS (score 96%)
+# Round 2 QA — ACCEPTS (weighted score 96%)
+# Score breakdown:
+#   parties:        100 × 15% = 15.0
+#   claims:          95 × 20% = 19.0  (all claims + 50K added)
+#   evidence:        90 × 15% = 13.5  (both reports distinguished)
+#   articles:        90 × 15% = 13.5  (Art.78 note added)
+#   contradictions: 100 × 10% = 10.0  (fully clarified)
+#   decisions:      100 × 15% = 15.0
+#   financials:      95 × 10% =  9.5  (contract value + all amounts)
+#   TOTAL = 95.5 ≈ 96
 DEMO_QA_REVIEW_ROUND2 = {
     "completeness_score": 96,
     "decision": "accept",
     "quality_threshold": 85,
+    "criteria_scores": {
+        "parties":        {"score": 100, "notes": "جميع الأطراف مذكورون بأسمائهم ووكلائهم بشكل كامل"},
+        "claims":         {"score": 95,  "notes": "جميع الادعاءات والدفوع مذكورة بما فيها مبلغ الـ 50,000 الإضافي"},
+        "evidence":       {"score": 90,  "notes": "تم التمييز بين التقريرين الهندسيين وتوضيح أن مكتب المدعي لم يُسمَّ"},
+        "articles":       {"score": 90,  "notes": "أُضيفت ملاحظة صحيحة عن محدودية انطباق المادة 78 على العقود الخاصة"},
+        "contradictions":  {"score": 100, "notes": "التناقض في نسبة الإنجاز مُوضّح بالكامل مع مصدر كل تقرير"},
+        "decisions":      {"score": 100, "notes": "جميع القرارات والإجراءات القادمة مذكورة"},
+        "financials":     {"score": 95,  "notes": "قيمة العقد الإجمالية مذكورة + جميع المبالغ والتواريخ دقيقة"},
+    },
+    "score_breakdown": {
+        "parties":        {"raw_score": 100, "weight": 15, "weighted_score": 15.0},
+        "claims":         {"raw_score": 95,  "weight": 20, "weighted_score": 19.0},
+        "evidence":       {"raw_score": 90,  "weight": 15, "weighted_score": 13.5},
+        "articles":       {"raw_score": 90,  "weight": 15, "weighted_score": 13.5},
+        "contradictions": {"raw_score": 100, "weight": 10, "weighted_score": 10.0},
+        "decisions":      {"raw_score": 100, "weight": 15, "weighted_score": 15.0},
+        "financials":     {"raw_score": 95,  "weight": 10, "weighted_score": 9.5},
+    },
+    "rubric": [
+        {"id": "parties",        "name": "ذكر جميع الأطراف وأسمائهم ووكلائهم", "weight": 15},
+        {"id": "claims",         "name": "اكتمال الادعاءات والدفوع",           "weight": 20},
+        {"id": "evidence",       "name": "ذكر الأدلة والمستندات",              "weight": 15},
+        {"id": "articles",       "name": "دقة المواد النظامية وانطباقها",       "weight": 15},
+        {"id": "contradictions", "name": "رصد التناقضات بين الأطراف",          "weight": 10},
+        {"id": "decisions",      "name": "قرارات المحكمة والإجراءات",          "weight": 15},
+        {"id": "financials",     "name": "دقة المبالغ والتواريخ",              "weight": 10},
+    ],
     "issues": [
         {
             "type": "suggestion",
+            "criterion": "articles",
             "description": "يمكن إضافة رقم المادة المناسبة من نظام المعاملات المدنية بدلاً من المادة 78",
             "severity": "low"
         }
@@ -303,16 +381,23 @@ DEMO_QA_REVIEW_ROUND2 = {
         "المادة 79 من نظام المعاملات المدنية — صحيحة ومناسبة",
         "البند السابع من العقد — مذكور بشكل صحيح",
     ],
-    "overall_assessment": "المحضر المُحسَّن شامل ودقيق بنسبة 96%. تمت معالجة جميع ملاحظات الجولة الأولى: أُضيفت قيمة العقد الإجمالية، ومبلغ الـ 50,000 الإضافي، وتوضيح التناقض بين التقريرين الهندسيين، وملاحظة حول انطباق المادة 78. تحسّن ملحوظ من 72% إلى 96%.",
+    "overall_assessment": "المحضر المُحسَّن شامل ودقيق بدرجة مرجّحة 96%. تمت معالجة جميع ملاحظات الجولة الأولى. أبرز التحسينات: التمييز بين التقريرين الهندسيين، إضافة مبلغ الـ 50,000، وتوضيح انطباق المادة 78.",
     "improvement_from_round1": {
         "previous_score": 72,
         "current_score": 96,
         "improvement": 24,
+        "criteria_improvements": {
+            "claims":         {"before": 60, "after": 95, "change": "+35"},
+            "evidence":       {"before": 50, "after": 90, "change": "+40"},
+            "articles":       {"before": 60, "after": 90, "change": "+30"},
+            "contradictions": {"before": 50, "after": 100, "change": "+50"},
+            "financials":     {"before": 70, "after": 95, "change": "+25"},
+        },
         "issues_resolved": [
             "أُضيف اسم المكتب الهندسي (الراشد) مع توضيح أن مكتب المدعي لم يُسمَّ",
             "أُضيفت قيمة العقد الإجمالية",
             "أُضيف ادعاء المدعى عليه بإنفاق 50,000 ريال إضافية",
-            "أُضيحت ملاحظة حول انطباق المادة 78 على العقود الخاصة",
+            "أُضيفت ملاحظة حول انطباق المادة 78 على العقود الخاصة",
             "تم التمييز بوضوح بين التقريرين الهندسيين",
         ]
     },

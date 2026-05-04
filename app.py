@@ -400,17 +400,83 @@ def main():
             st.markdown("### محضر الجلسة والملخص التنفيذي")
             st.markdown(results.get("summary", ""))
 
-        # -- Tab 4: QA Review (Quality Loop) --
+        # -- Tab 4: QA Review (Quality Loop with Structured Rubric) --
         with tab4:
             qa_rounds = results.get("qa_rounds", 1)
             qa_round_1 = results.get("qa_round_1", {})
             qa_final = results.get("qa_review", {})
 
+            # --- Helper: render rubric breakdown table ---
+            def render_rubric_table(qa_data, round_label=""):
+                rubric = qa_data.get("rubric", [])
+                breakdown = qa_data.get("score_breakdown", {})
+                criteria_scores = qa_data.get("criteria_scores", {})
+                if not rubric or not breakdown:
+                    return
+
+                st.markdown(f"**📊 تفصيل الدرجات حسب المعايير {round_label}:**")
+                header = (
+                    "<table style='width:100%; border-collapse:collapse; margin:0.5rem 0;'>"
+                    "<tr style='background:#0f172a;'>"
+                    "<th style='padding:8px; border:1px solid #334155; color:#94a3b8;'>المعيار</th>"
+                    "<th style='padding:8px; border:1px solid #334155; color:#94a3b8; width:60px;'>الوزن</th>"
+                    "<th style='padding:8px; border:1px solid #334155; color:#94a3b8; width:70px;'>الدرجة</th>"
+                    "<th style='padding:8px; border:1px solid #334155; color:#94a3b8; width:90px;'>المرجّح</th>"
+                    "<th style='padding:8px; border:1px solid #334155; color:#94a3b8;'>ملاحظة</th>"
+                    "</tr>"
+                )
+                rows = ""
+                for c in rubric:
+                    cid = c["id"]
+                    bd = breakdown.get(cid, {})
+                    cs = criteria_scores.get(cid, {})
+                    raw = bd.get("raw_score", 0)
+                    weight = bd.get("weight", c.get("weight", 0))
+                    weighted = bd.get("weighted_score", 0)
+                    notes = cs.get("notes", "") if isinstance(cs, dict) else ""
+                    bar_color = "#22c55e" if raw >= 85 else "#f59e0b" if raw >= 60 else "#ef4444"
+                    rows += (
+                        f"<tr style='background:#1e293b;'>"
+                        f"<td style='padding:6px 8px; border:1px solid #334155;'>{c['name']}</td>"
+                        f"<td style='padding:6px 8px; border:1px solid #334155; text-align:center;'>{weight}%</td>"
+                        f"<td style='padding:6px 8px; border:1px solid #334155; text-align:center;'>"
+                        f"<span style='color:{bar_color}; font-weight:700;'>{raw}</span></td>"
+                        f"<td style='padding:6px 8px; border:1px solid #334155; text-align:center;'>{weighted}</td>"
+                        f"<td style='padding:6px 8px; border:1px solid #334155; color:#94a3b8; font-size:0.8rem;'>{notes}</td>"
+                        f"</tr>"
+                    )
+                st.markdown(header + rows + "</table>", unsafe_allow_html=True)
+
+            # --- Helper: render issues list ---
+            def render_issues(issues, border_color="#ef4444"):
+                criterion_labels = {
+                    "parties": "الأطراف", "claims": "الادعاءات", "evidence": "الأدلة",
+                    "articles": "المواد النظامية", "contradictions": "التناقضات",
+                    "decisions": "القرارات", "financials": "المبالغ والتواريخ",
+                }
+                type_labels = {
+                    "missing_info": "معلومات مفقودة", "inaccuracy": "خطأ",
+                    "contradiction": "تناقض", "suggestion": "اقتراح",
+                }
+                for issue in issues:
+                    severity_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(issue.get("severity", ""), "⚪")
+                    type_label = type_labels.get(issue.get("type", ""), issue.get("type", ""))
+                    crit = criterion_labels.get(issue.get("criterion", ""), "")
+                    crit_badge = f" <span style='background:#334155; padding:1px 6px; border-radius:4px; font-size:0.7rem;'>{crit}</span>" if crit else ""
+                    st.markdown(
+                        f"<div style='background:#1e293b; padding:0.5rem 0.8rem; margin:0.3rem 0; "
+                        f"border-radius:6px; border-right:3px solid {border_color};'>"
+                        f"{severity_icon} <strong>{type_label}</strong>{crit_badge}: {issue.get('description', '')}"
+                        f"</div>",
+                        unsafe_allow_html=True,
+                    )
+
             if qa_rounds >= 2 and qa_round_1:
-                st.markdown("### حلقة تحسين الجودة — قرار ذاتي للوكلاء")
+                st.markdown("### حلقة تحسين الجودة — تقييم مُهيكل بمعايير مُوزّنة")
                 st.markdown(
                     "<p style='color:#94a3b8; font-size:0.85rem;'>"
-                    "وكيل المراجعة يتخذ قراراً مستقلاً: رفض أو قبول. عند الرفض يُرسل ملاحظات مُستهدفة للوكلاء المعنيين لإعادة الإنتاج."
+                    "وكيل المراجعة يُقيّم المحضر على 7 معايير بأوزان محددة. "
+                    "الدرجة النهائية = مجموع (درجة المعيار × وزنه). حد القبول 85%."
                     "</p>",
                     unsafe_allow_html=True,
                 )
@@ -452,27 +518,12 @@ def main():
                 # Round 1 details
                 st.markdown("---")
                 st.markdown("#### ❌ الجولة الأولى — مرفوض")
+                render_rubric_table(qa_round_1, "(الجولة الأولى)")
 
                 r1_issues = qa_round_1.get("issues", [])
                 if r1_issues:
                     st.markdown("**الملاحظات التي أدت للرفض:**")
-                    for issue in r1_issues:
-                        severity_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(
-                            issue.get("severity", ""), "⚪"
-                        )
-                        type_label = {
-                            "missing_info": "معلومات مفقودة",
-                            "inaccuracy": "خطأ",
-                            "contradiction": "تناقض",
-                            "suggestion": "اقتراح",
-                        }.get(issue.get("type", ""), issue.get("type", ""))
-                        st.markdown(
-                            f"<div style='background:#1e293b; padding:0.5rem 0.8rem; margin:0.3rem 0; "
-                            f"border-radius:6px; border-right:3px solid #ef4444;'>"
-                            f"{severity_icon} <strong>{type_label}</strong>: {issue.get('description', '')}"
-                            f"</div>",
-                            unsafe_allow_html=True,
-                        )
+                    render_issues(r1_issues, "#ef4444")
 
                 # Feedback routing
                 feedback_sent = qa_round_1.get("feedback_sent", [])
@@ -498,12 +549,36 @@ def main():
                 # Round 2 details
                 st.markdown("---")
                 st.markdown("#### ✅ الجولة الثانية — مقبول")
+                render_rubric_table(qa_final, "(الجولة الثانية)")
+
+                # Per-criterion improvement comparison
+                improvement_data = qa_final.get("improvement_from_round1", {})
+                criteria_imp = improvement_data.get("criteria_improvements", {})
+                if criteria_imp:
+                    criterion_labels = {
+                        "parties": "الأطراف", "claims": "الادعاءات", "evidence": "الأدلة",
+                        "articles": "المواد النظامية", "contradictions": "التناقضات",
+                        "decisions": "القرارات", "financials": "المبالغ والتواريخ",
+                    }
+                    st.markdown("**📈 التحسين لكل معيار:**")
+                    imp_rows = ""
+                    for cid, data in criteria_imp.items():
+                        label = criterion_labels.get(cid, cid)
+                        imp_rows += (
+                            f"<div style='display:inline-block; background:#1e293b; border:1px solid #334155; "
+                            f"border-radius:8px; padding:0.5rem 0.8rem; margin:0.3rem; text-align:center;'>"
+                            f"<div style='color:#94a3b8; font-size:0.75rem;'>{label}</div>"
+                            f"<div><span style='color:#ef4444;'>{data['before']}</span>"
+                            f" → <span style='color:#22c55e;'>{data['after']}</span>"
+                            f" <span style='color:#22d3ee; font-size:0.8rem;'>({data['change']})</span></div>"
+                            f"</div>"
+                        )
+                    st.markdown(f"<div style='display:flex; flex-wrap:wrap;'>{imp_rows}</div>", unsafe_allow_html=True)
 
                 st.markdown("**📝 التقييم العام:**")
                 st.success(qa_final.get("overall_assessment", ""))
 
                 # Issues resolved
-                improvement_data = qa_final.get("improvement_from_round1", {})
                 if improvement_data:
                     resolved = improvement_data.get("issues_resolved", [])
                     if resolved:
@@ -515,11 +590,7 @@ def main():
                 r2_issues = qa_final.get("issues", [])
                 if r2_issues:
                     st.markdown("**ملاحظات متبقية (غير حرجة):**")
-                    for issue in r2_issues:
-                        severity_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(
-                            issue.get("severity", ""), "⚪"
-                        )
-                        st.markdown(f"{severity_icon} {issue.get('description', '')}")
+                    render_issues(r2_issues, "#f59e0b")
 
                 # Verified articles
                 verified = qa_final.get("verified_articles", [])
@@ -529,8 +600,8 @@ def main():
                         st.markdown(f"- ✅ {v}")
 
             else:
-                # Single round (no rejection)
-                st.markdown("### تقرير مراجعة الجودة")
+                # Single round
+                st.markdown("### تقرير مراجعة الجودة — تقييم مُهيكل")
                 qa = qa_final
 
                 if not qa.get("parse_error"):
@@ -542,12 +613,14 @@ def main():
                     st.markdown(
                         f"<div class='metric-box'>"
                         f"<div class='number'>{score}%</div>"
-                        f"<div class='label'>نسبة اكتمال المحضر</div>"
+                        f"<div class='label'>الدرجة المرجّحة</div>"
                         f"<div style='color:{decision_color}; font-size:1.1rem; font-weight:700; margin-top:0.5rem;'>{decision_icon}</div>"
                         f"</div>",
                         unsafe_allow_html=True,
                     )
                     st.progress(score / 100)
+
+                    render_rubric_table(qa)
 
                     st.markdown("**📝 التقييم العام:**")
                     st.info(qa.get("overall_assessment", ""))
@@ -555,11 +628,7 @@ def main():
                     issues = qa.get("issues", [])
                     if issues:
                         st.markdown("**🔍 الملاحظات:**")
-                        for issue in issues:
-                            severity_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(
-                                issue.get("severity", ""), "⚪"
-                            )
-                            st.markdown(f"{severity_icon} **{issue.get('type', '')}**: {issue.get('description', '')}")
+                        render_issues(issues)
                     else:
                         st.success("لا توجد ملاحظات — المحضر مكتمل ودقيق.")
                 else:
