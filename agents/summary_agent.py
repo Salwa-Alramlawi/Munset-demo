@@ -1,6 +1,8 @@
-"""Agent 3 — Summary Agent: generates structured session minutes."""
+"""Agent 3 — Summary Agent: generates structured session minutes.
+Can re-generate with QA feedback to improve results."""
 
 from __future__ import annotations
+import json
 import anthropic
 
 from a2a.message import A2AMessage
@@ -25,23 +27,44 @@ SYSTEM_PROMPT = """أنت كاتب ضبط ذكي متخصص في إعداد مح
 
 اكتب بلغة قانونية رسمية واضحة."""
 
+REGENERATION_PROMPT = """أنت كاتب ضبط ذكي متخصص في إعداد محاضر الجلسات القضائية.
+
+هذه الجولة الثانية. وكيل مراجعة الجودة رفض المحضر السابق وأرسل لك الملاحظات التالية:
+
+{feedback}
+
+أعد إنشاء المحضر مع معالجة كل ملاحظة من الملاحظات أعلاه. تأكد من إضافة كل المعلومات المفقودة وتصحيح أي خطأ.
+
+أنشئ:
+1. محضر الجلسة الرسمي (مُحسَّن)
+2. ملخص تنفيذي
+3. الإجراءات القادمة
+
+اكتب بلغة قانونية رسمية واضحة."""
+
 
 class SummaryAgent(BaseAgent):
-    """Generates structured session minutes and executive summary."""
+    """Generates structured session minutes and executive summary.
+    Can re-generate with feedback from QA agent."""
 
     def __init__(self, protocol: A2AProtocol):
         super().__init__("summary_agent", protocol)
         self.client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+        self._last_feedback = None
 
-    def summarize(self, transcript: str, legal_analysis: dict) -> str:
+    def summarize(self, transcript: str, legal_analysis: dict, feedback: str | None = None) -> str:
         """Generate session minutes from transcript + legal analysis."""
-        import json
         analysis_text = json.dumps(legal_analysis, ensure_ascii=False, indent=2)
+
+        if feedback:
+            system = REGENERATION_PROMPT.format(feedback=feedback)
+        else:
+            system = SYSTEM_PROMPT
 
         response = self.client.messages.create(
             model=config.CLAUDE_MODEL,
             max_tokens=4096,
-            system=SYSTEM_PROMPT,
+            system=system,
             messages=[
                 {
                     "role": "user",
@@ -56,16 +79,14 @@ class SummaryAgent(BaseAgent):
         return response.content[0].text
 
     def handle_message(self, message: A2AMessage):
-        # Handle feedback from QA agent (bidirectional A2A)
         if message.msg_type == "feedback":
             feedback = message.payload.get("feedback", "")
-            severity = message.payload.get("severity", "info")
+            self._last_feedback = feedback
             return message.reply(
-                payload={"status": "feedback_received", "action": f"ملاحظة ({severity}): {feedback} — سيتم مراعاتها في التلخيصات القادمة."},
+                payload={"status": "feedback_received", "action": "سيتم إعادة إنتاج المحضر مع مراعاة الملاحظات"},
                 sender=self.name,
             )
 
-        # Handle clarification requests from other agents
         if message.msg_type == "clarification_request":
             question = message.payload.get("clarification_question", "")
             return message.reply(
@@ -75,5 +96,14 @@ class SummaryAgent(BaseAgent):
 
         transcript = message.payload.get("full_transcript", "")
         legal_analysis = message.payload.get("legal_analysis", {})
-        result = self.summarize(transcript, legal_analysis)
+        feedback = message.payload.get("qa_feedback")
+
+        if feedback:
+            self._last_feedback = feedback
+
+        result = self.summarize(transcript, legal_analysis, self._last_feedback)
+
+        if self._last_feedback:
+            self._last_feedback = None
+
         return message.reply(payload={"summary": result}, sender=self.name)

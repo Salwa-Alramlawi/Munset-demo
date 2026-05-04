@@ -400,37 +400,170 @@ def main():
             st.markdown("### محضر الجلسة والملخص التنفيذي")
             st.markdown(results.get("summary", ""))
 
-        # -- Tab 4: QA Review --
+        # -- Tab 4: QA Review (Quality Loop) --
         with tab4:
-            st.markdown("### تقرير مراجعة الجودة")
-            qa = results.get("qa_review", {})
+            qa_rounds = results.get("qa_rounds", 1)
+            qa_round_1 = results.get("qa_round_1", {})
+            qa_final = results.get("qa_review", {})
 
-            if not qa.get("parse_error"):
-                score = qa.get("completeness_score", 0)
+            if qa_rounds >= 2 and qa_round_1:
+                st.markdown("### حلقة تحسين الجودة — قرار ذاتي للوكلاء")
                 st.markdown(
-                    f"<div class='metric-box'>"
-                    f"<div class='number'>{score}%</div>"
-                    f"<div class='label'>نسبة اكتمال المحضر</div>"
+                    "<p style='color:#94a3b8; font-size:0.85rem;'>"
+                    "وكيل المراجعة يتخذ قراراً مستقلاً: رفض أو قبول. عند الرفض يُرسل ملاحظات مُستهدفة للوكلاء المعنيين لإعادة الإنتاج."
+                    "</p>",
+                    unsafe_allow_html=True,
+                )
+
+                # Improvement summary bar
+                score_r1 = qa_round_1.get("completeness_score", 0)
+                score_r2 = qa_final.get("completeness_score", 0)
+                improvement = score_r2 - score_r1
+                threshold = qa_round_1.get("quality_threshold", 85)
+
+                st.markdown(
+                    f"<div style='background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid #334155; "
+                    f"border-radius:12px; padding:1.2rem; margin:1rem 0;'>"
+                    f"<div style='display:flex; justify-content:space-around; text-align:center;'>"
+                    f"<div>"
+                    f"<div style='font-size:2.5rem; font-weight:700; color:#ef4444;'>{score_r1}%</div>"
+                    f"<div style='color:#94a3b8; font-size:0.85rem;'>الجولة الأولى</div>"
+                    f"<div style='color:#ef4444; font-size:0.8rem;'>❌ مرفوض</div>"
+                    f"</div>"
+                    f"<div style='display:flex; align-items:center;'>"
+                    f"<div style='font-size:2rem; color:#22d3ee;'>→ +{improvement} →</div>"
+                    f"</div>"
+                    f"<div>"
+                    f"<div style='font-size:2.5rem; font-weight:700; color:#22c55e;'>{score_r2}%</div>"
+                    f"<div style='color:#94a3b8; font-size:0.85rem;'>الجولة الثانية</div>"
+                    f"<div style='color:#22c55e; font-size:0.8rem;'>✅ مقبول</div>"
+                    f"</div>"
+                    f"<div style='display:flex; align-items:center;'>"
+                    f"<div style='background:#334155; padding:0.5rem 1rem; border-radius:8px;'>"
+                    f"<div style='color:#94a3b8; font-size:0.7rem;'>حد القبول</div>"
+                    f"<div style='color:#f59e0b; font-size:1.5rem; font-weight:700;'>{threshold}%</div>"
+                    f"</div>"
+                    f"</div>"
+                    f"</div>"
                     f"</div>",
                     unsafe_allow_html=True,
                 )
-                st.progress(score / 100)
 
-                st.markdown("**📝 التقييم العام:**")
-                st.info(qa.get("overall_assessment", ""))
+                # Round 1 details
+                st.markdown("---")
+                st.markdown("#### ❌ الجولة الأولى — مرفوض")
 
-                issues = qa.get("issues", [])
-                if issues:
-                    st.markdown("**🔍 الملاحظات:**")
-                    for issue in issues:
+                r1_issues = qa_round_1.get("issues", [])
+                if r1_issues:
+                    st.markdown("**الملاحظات التي أدت للرفض:**")
+                    for issue in r1_issues:
                         severity_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(
                             issue.get("severity", ""), "⚪"
                         )
-                        st.markdown(f"{severity_icon} **{issue.get('type', '')}**: {issue.get('description', '')}")
-                else:
-                    st.success("لا توجد ملاحظات — المحضر مكتمل ودقيق.")
+                        type_label = {
+                            "missing_info": "معلومات مفقودة",
+                            "inaccuracy": "خطأ",
+                            "contradiction": "تناقض",
+                            "suggestion": "اقتراح",
+                        }.get(issue.get("type", ""), issue.get("type", ""))
+                        st.markdown(
+                            f"<div style='background:#1e293b; padding:0.5rem 0.8rem; margin:0.3rem 0; "
+                            f"border-radius:6px; border-right:3px solid #ef4444;'>"
+                            f"{severity_icon} <strong>{type_label}</strong>: {issue.get('description', '')}"
+                            f"</div>",
+                            unsafe_allow_html=True,
+                        )
+
+                # Feedback routing
+                feedback_sent = qa_round_1.get("feedback_sent", [])
+                if feedback_sent:
+                    st.markdown("**📨 الملاحظات المُرسلة للوكلاء:**")
+                    agent_labels_qa = {
+                        "summary_agent": "وكيل التلخيص 📝",
+                        "legal_analysis_agent": "وكيل التحليل القانوني ⚖️",
+                    }
+                    for fb in feedback_sent:
+                        target = agent_labels_qa.get(fb.get("to", ""), fb.get("to", ""))
+                        issues_list = fb.get("issues", [])
+                        issues_text = "، ".join(issues_list) if isinstance(issues_list, list) and issues_list and isinstance(issues_list[0], str) else ""
+                        st.markdown(
+                            f"<div style='background:#451a03; padding:0.6rem 0.8rem; margin:0.3rem 0; "
+                            f"border-radius:6px; border-right:3px solid #f97316;'>"
+                            f"وكيل المراجعة ✅ → <strong>{target}</strong>"
+                            f"{': ' + issues_text if issues_text else ''}"
+                            f"</div>",
+                            unsafe_allow_html=True,
+                        )
+
+                # Round 2 details
+                st.markdown("---")
+                st.markdown("#### ✅ الجولة الثانية — مقبول")
+
+                st.markdown("**📝 التقييم العام:**")
+                st.success(qa_final.get("overall_assessment", ""))
+
+                # Issues resolved
+                improvement_data = qa_final.get("improvement_from_round1", {})
+                if improvement_data:
+                    resolved = improvement_data.get("issues_resolved", [])
+                    if resolved:
+                        st.markdown("**المشكلات التي تم حلها:**")
+                        for r in resolved:
+                            st.markdown(f"- ✅ {r}")
+
+                # Remaining suggestions
+                r2_issues = qa_final.get("issues", [])
+                if r2_issues:
+                    st.markdown("**ملاحظات متبقية (غير حرجة):**")
+                    for issue in r2_issues:
+                        severity_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(
+                            issue.get("severity", ""), "⚪"
+                        )
+                        st.markdown(f"{severity_icon} {issue.get('description', '')}")
+
+                # Verified articles
+                verified = qa_final.get("verified_articles", [])
+                if verified:
+                    st.markdown("**المواد النظامية المُتحقق منها:**")
+                    for v in verified:
+                        st.markdown(f"- ✅ {v}")
+
             else:
-                st.json(qa)
+                # Single round (no rejection)
+                st.markdown("### تقرير مراجعة الجودة")
+                qa = qa_final
+
+                if not qa.get("parse_error"):
+                    score = qa.get("completeness_score", 0)
+                    decision = qa.get("decision", "")
+                    decision_icon = "✅ مقبول" if decision == "accept" else "❌ مرفوض"
+                    decision_color = "#22c55e" if decision == "accept" else "#ef4444"
+
+                    st.markdown(
+                        f"<div class='metric-box'>"
+                        f"<div class='number'>{score}%</div>"
+                        f"<div class='label'>نسبة اكتمال المحضر</div>"
+                        f"<div style='color:{decision_color}; font-size:1.1rem; font-weight:700; margin-top:0.5rem;'>{decision_icon}</div>"
+                        f"</div>",
+                        unsafe_allow_html=True,
+                    )
+                    st.progress(score / 100)
+
+                    st.markdown("**📝 التقييم العام:**")
+                    st.info(qa.get("overall_assessment", ""))
+
+                    issues = qa.get("issues", [])
+                    if issues:
+                        st.markdown("**🔍 الملاحظات:**")
+                        for issue in issues:
+                            severity_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(
+                                issue.get("severity", ""), "⚪"
+                            )
+                            st.markdown(f"{severity_icon} **{issue.get('type', '')}**: {issue.get('description', '')}")
+                    else:
+                        st.success("لا توجد ملاحظات — المحضر مكتمل ودقيق.")
+                else:
+                    st.json(qa)
 
         # -- Tab 5: Chatbot --
         with tab5:
