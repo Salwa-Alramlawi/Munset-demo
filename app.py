@@ -20,8 +20,45 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
 
     * { font-family: 'Tajawal', sans-serif; }
-    .stApp { direction: rtl; }
+    html, body, .stApp { direction: rtl; }
     .main .block-container { direction: rtl; text-align: right; }
+
+    /* Force RTL on all Streamlit elements */
+    .stMarkdown, .stText, .stAlert, .stJson,
+    .stTextInput > div, .stTextArea > div,
+    .stSelectbox > div, .stMultiSelect > div,
+    .stFileUploader > div, .stChatMessage,
+    [data-testid="stChatInput"], [data-testid="stChatMessage"],
+    .stTabs [data-baseweb="tab"], .stExpander,
+    h1, h2, h3, h4, h5, h6, p, li, td, th, label, span {
+        direction: rtl !important;
+        text-align: right !important;
+    }
+
+    /* Sidebar RTL */
+    [data-testid="stSidebar"] { direction: rtl; text-align: right; }
+    [data-testid="stSidebar"] .stMarkdown { direction: rtl !important; text-align: right !important; }
+
+    /* Tabs RTL */
+    .stTabs [data-baseweb="tab-list"] { direction: rtl; flex-direction: row-reverse; }
+
+    /* Buttons alignment */
+    .stButton > button { direction: rtl; }
+
+    /* Chat messages RTL */
+    [data-testid="stChatMessage"] > div { direction: rtl !important; text-align: right !important; }
+    .stChatInputContainer { direction: rtl; }
+    [data-testid="stChatInput"] textarea { direction: rtl; text-align: right; }
+
+    /* Tables RTL */
+    table { direction: rtl; }
+    th, td { text-align: right !important; }
+
+    /* Progress bar */
+    .stProgress > div { direction: ltr; }
+
+    /* File uploader */
+    [data-testid="stFileUploader"] { direction: rtl; }
 
     .agent-card {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
