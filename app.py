@@ -20,8 +20,12 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
 
     * { font-family: 'Tajawal', sans-serif; }
-    html, body, .stApp { direction: rtl; }
+    html, body, .stApp {
+        direction: rtl;
+        background: #f8fafc !important;
+    }
     .main .block-container { direction: rtl; text-align: right; max-width: 1200px; }
+    .stApp > header { background: #ffffff !important; }
 
     .stMarkdown, .stText, .stAlert, .stJson,
     .stTextInput > div, .stTextArea > div,
@@ -34,7 +38,7 @@ st.markdown("""
         text-align: right !important;
     }
 
-    [data-testid="stSidebar"] { direction: rtl; text-align: right; }
+    [data-testid="stSidebar"] { direction: rtl; text-align: right; background: #ffffff; }
     [data-testid="stSidebar"] .stMarkdown { direction: rtl !important; text-align: right !important; }
     .stTabs [data-baseweb="tab-list"] { direction: rtl; flex-direction: row-reverse; }
     .stButton > button { direction: rtl; }
@@ -55,15 +59,16 @@ st.markdown("""
     .hero-title {
         font-size: 3.5rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #22d3ee, #3b82f6, #8b5cf6);
+        background: linear-gradient(135deg, #0891b2, #7c3aed);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin-bottom: 0.3rem;
         line-height: 1.3;
     }
     .hero-subtitle {
         font-size: 1.3rem;
-        color: #94a3b8;
+        color: #475569;
         font-weight: 400;
         margin-bottom: 0.8rem;
     }
@@ -87,9 +92,9 @@ st.markdown("""
         font-weight: 700;
         display: inline-block;
     }
-    .badge-track { background: linear-gradient(135deg, #059669, #10b981); color: #fff; }
-    .badge-cloud { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; }
-    .badge-ai { background: linear-gradient(135deg, #0891b2, #22d3ee); color: #fff; }
+    .badge-track { background: #f0fdf4; border: 1px solid rgba(22,163,74,0.2); color: #16a34a; }
+    .badge-cloud { background: #f5f3ff; border: 1px solid rgba(124,58,237,0.2); color: #7c3aed; }
+    .badge-ai { background: #e0f7fa; border: 1px solid rgba(8,145,178,0.2); color: #0891b2; }
 
     /* ===== STATS ROW ===== */
     .stats-row {
@@ -100,17 +105,18 @@ st.markdown("""
         flex-wrap: wrap;
     }
     .stat-card {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        border: 1px solid #334155;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 1.2rem 2rem;
         text-align: center;
         min-width: 140px;
         transition: transform 0.2s, border-color 0.2s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .stat-card:hover { border-color: #22d3ee; transform: translateY(-3px); }
-    .stat-card .stat-number { font-size: 2.2rem; font-weight: 800; color: #22d3ee; }
-    .stat-card .stat-label { font-size: 0.8rem; color: #94a3b8; margin-top: 0.2rem; }
+    .stat-card:hover { border-color: #0891b2; transform: translateY(-3px); box-shadow: 0 4px 20px rgba(8,145,178,0.1); }
+    .stat-card .stat-number { font-size: 2.2rem; font-weight: 800; color: #0891b2; }
+    .stat-card .stat-label { font-size: 0.8rem; color: #475569; margin-top: 0.2rem; }
 
     /* ===== AGENT CARDS ===== */
     .agents-showcase {
@@ -120,60 +126,62 @@ st.markdown("""
         margin: 1.5rem 0;
     }
     .agent-showcase-card {
-        background: linear-gradient(180deg, #0f172a 0%, #1a2332 100%);
-        border: 1px solid #334155;
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
         border-radius: 14px;
         padding: 1.2rem 0.6rem;
         text-align: center;
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     .agent-showcase-card::before {
         content: '';
         position: absolute;
         top: 0; left: 0; right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #22d3ee, #3b82f6);
+        background: linear-gradient(90deg, #0891b2, #7c3aed);
         opacity: 0;
         transition: opacity 0.3s;
     }
     .agent-showcase-card:hover::before { opacity: 1; }
-    .agent-showcase-card:hover { border-color: #22d3ee; transform: translateY(-4px); box-shadow: 0 8px 25px rgba(34,211,238,0.15); }
+    .agent-showcase-card:hover { border-color: #0891b2; transform: translateY(-4px); box-shadow: 0 4px 20px rgba(8,145,178,0.1); }
     .agent-showcase-card .agent-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
-    .agent-showcase-card .agent-name { font-size: 0.85rem; font-weight: 700; color: #f1f5f9; }
+    .agent-showcase-card .agent-name { font-size: 0.85rem; font-weight: 700; color: #1e293b; }
     .agent-showcase-card .agent-desc { font-size: 0.72rem; color: #64748b; margin-top: 0.3rem; line-height: 1.5; }
     .agent-showcase-card .agent-tech-badge {
         display: inline-block; margin-top: 0.5rem;
-        background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3);
-        border-radius: 6px; padding: 0.15rem 0.5rem; font-size: 0.6rem; color: #22d3ee;
+        background: #e0f7fa; border: 1px solid rgba(8,145,178,0.2);
+        border-radius: 6px; padding: 0.15rem 0.5rem; font-size: 0.6rem; color: #0891b2;
     }
     .agent-showcase-card .agent-agentic {
         margin-top: 0.5rem; padding: 0.3rem 0.5rem;
-        background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3);
-        border-radius: 6px; font-size: 0.62rem; color: #a78bfa; line-height: 1.5;
+        background: #f5f3ff; border: 1px solid rgba(124,58,237,0.2);
+        border-radius: 6px; font-size: 0.62rem; color: #7c3aed; line-height: 1.5;
     }
 
     /* ===== QUALITY LOOP HIGHLIGHT ===== */
     .quality-highlight {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        border: 2px solid #334155;
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
         border-radius: 16px;
         padding: 1.5rem 2rem;
         margin: 1.5rem 0;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     .quality-highlight::before {
         content: '';
         position: absolute;
         top: 0; right: 0;
         width: 200px; height: 200px;
-        background: radial-gradient(circle, rgba(34,211,238,0.05), transparent);
+        background: radial-gradient(circle, rgba(8,145,178,0.04), transparent);
         border-radius: 50%;
     }
     .quality-highlight .qh-title {
-        font-size: 1.1rem; font-weight: 700; color: #f1f5f9;
+        font-size: 1.1rem; font-weight: 700; color: #1e293b;
         margin-bottom: 1rem; text-align: center;
     }
     .quality-highlight .qh-flow {
@@ -181,17 +189,18 @@ st.markdown("""
         gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0;
     }
     .qh-step {
-        background: #0f172a;
-        border: 1px solid #334155;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
         border-radius: 10px;
         padding: 0.6rem 1rem;
         text-align: center;
         font-size: 0.8rem;
+        color: #1e293b;
     }
-    .qh-step.reject { border-color: #ef4444; }
-    .qh-step.accept { border-color: #22c55e; }
-    .qh-arrow { color: #22d3ee; font-size: 1.3rem; font-weight: 700; }
-    .qh-arrow-back { color: #f97316; font-size: 1rem; }
+    .qh-step.reject { border-color: #dc2626; background: #fef2f2; }
+    .qh-step.accept { border-color: #16a34a; background: #f0fdf4; }
+    .qh-arrow { color: #0891b2; font-size: 1.3rem; font-weight: 700; }
+    .qh-arrow-back { color: #b45309; font-size: 1rem; }
 
     /* ===== CTA SECTION ===== */
     .cta-section {
@@ -201,43 +210,48 @@ st.markdown("""
         margin: 2rem 0;
     }
     .cta-card {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        border: 2px solid #334155;
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
         border-radius: 16px;
         padding: 2rem 1.5rem;
         text-align: center;
         transition: border-color 0.3s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .cta-card:hover { border-color: #22d3ee; }
+    .cta-card:hover { border-color: #0891b2; box-shadow: 0 4px 20px rgba(8,145,178,0.1); }
     .cta-card .cta-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
-    .cta-card .cta-title { font-size: 1.1rem; font-weight: 700; color: #f1f5f9; }
+    .cta-card .cta-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; }
     .cta-card .cta-desc { font-size: 0.85rem; color: #64748b; margin-top: 0.3rem; }
 
     /* ===== METRIC BOX ===== */
     .metric-box {
-        background: #1e293b;
+        background: #ffffff;
         border-radius: 12px;
         padding: 1.2rem;
         text-align: center;
-        border: 1px solid #334155;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .metric-box .number { font-size: 2rem; font-weight: 700; color: #22d3ee; }
-    .metric-box .label { color: #94a3b8; font-size: 0.85rem; }
+    .metric-box .number { font-size: 2rem; font-weight: 700; color: #0891b2; }
+    .metric-box .label { color: #475569; font-size: 0.85rem; }
 
     /* ===== CHAT ===== */
     .chat-user {
-        background: #1e3a5f; border-radius: 12px; padding: 0.8rem 1rem;
+        background: linear-gradient(135deg, #0e7490, #0891b2); color: #ffffff;
+        border-radius: 12px; padding: 0.8rem 1rem;
         margin: 0.5rem 0; margin-left: 20%;
+        box-shadow: 0 2px 8px rgba(8,145,178,0.15);
     }
     .chat-bot {
-        background: #1e293b; border-radius: 12px; padding: 0.8rem 1rem;
-        margin: 0.5rem 0; margin-right: 20%; border: 1px solid #334155;
+        background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;
+        margin: 0.5rem 0; margin-right: 20%; border: 1px solid #e2e8f0;
+        color: #475569;
     }
 
     /* ===== DEMO BADGE ===== */
     .demo-badge {
-        background: linear-gradient(135deg, #059669, #10b981);
-        color: white; padding: 0.3rem 1rem; border-radius: 20px;
+        background: #e0f7fa; border: 1px solid rgba(8,145,178,0.2);
+        color: #0891b2; padding: 0.3rem 1rem; border-radius: 20px;
         font-size: 0.8rem; font-weight: 700; display: inline-block; margin-bottom: 1rem;
     }
 
@@ -247,15 +261,16 @@ st.markdown("""
 
     /* ===== FLOW ===== */
     .agent-flow-card {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        border: 1px solid #334155; border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0; border-radius: 12px;
         padding: 0.8rem; text-align: center; transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .agent-flow-card:hover { border-color: #22d3ee; transform: translateY(-2px); }
+    .agent-flow-card:hover { border-color: #0891b2; transform: translateY(-2px); box-shadow: 0 4px 20px rgba(8,145,178,0.1); }
     .agent-flow-card .icon { font-size: 1.8rem; }
-    .agent-flow-card .name { color: #22d3ee; font-size: 0.8rem; font-weight: 700; margin-top: 0.3rem; }
+    .agent-flow-card .name { color: #0891b2; font-size: 0.8rem; font-weight: 700; margin-top: 0.3rem; }
     .agent-flow-card .tech { color: #64748b; font-size: 0.65rem; }
-    .flow-arrow { color: #22d3ee; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
+    .flow-arrow { color: #0891b2; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
@@ -331,7 +346,7 @@ def main():
                 <div class="agent-name">التفريغ الصوتي</div>
                 <div class="agent-desc">تفريغ الصوت وتحديد المتحدثين</div>
                 <div class="agent-tech-badge">Groq Whisper + pyannote.ai</div>
-                <div class="agent-agentic">🤖 يطلب توضيحاً من المستخدم عند غموض هوية المتحدث</div>
+                <div class="agent-agentic">🤖 يطلب توضيحاً من المستخدم عند غموض هوية المتحدث عندما لا تكون المنصة مربوطة بالTeams</div>
             </div>
             <div class="agent-showcase-card">
                 <div class="agent-icon">⚖️</div>
@@ -491,14 +506,14 @@ def main():
             score_r1 = qa_round_1.get("completeness_score", 0)
             score_r2 = qa_final.get("completeness_score", 0)
             st.markdown(
-                f"<div style='background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid #334155; "
-                f"border-radius:12px; padding:1rem 1.5rem; margin:0.5rem 0 1.5rem;'>"
+                f"<div style='background:#ffffff; border:1px solid #e2e8f0; "
+                f"border-radius:12px; padding:1rem 1.5rem; margin:0.5rem 0 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.04);'>"
                 f"<div style='display:flex; align-items:center; justify-content:center; gap:1.5rem; flex-wrap:wrap;'>"
-                f"<span style='color:#94a3b8; font-size:0.9rem;'>حلقة الجودة:</span>"
-                f"<span style='color:#ef4444; font-size:1.3rem; font-weight:700;'>❌ {score_r1}%</span>"
-                f"<span style='color:#22d3ee; font-size:1.2rem;'>→ ملاحظات + إعادة إنتاج →</span>"
-                f"<span style='color:#22c55e; font-size:1.3rem; font-weight:700;'>✅ {score_r2}%</span>"
-                f"<span style='background:#334155; padding:0.3rem 0.8rem; border-radius:6px; color:#f59e0b; font-size:0.8rem;'>"
+                f"<span style='color:#475569; font-size:0.9rem;'>حلقة الجودة:</span>"
+                f"<span style='color:#dc2626; font-size:1.3rem; font-weight:700;'>❌ {score_r1}%</span>"
+                f"<span style='color:#0891b2; font-size:1.2rem;'>→ ملاحظات + إعادة إنتاج →</span>"
+                f"<span style='color:#16a34a; font-size:1.3rem; font-weight:700;'>✅ {score_r2}%</span>"
+                f"<span style='background:#fffbeb; border:1px solid rgba(180,83,9,0.2); padding:0.3rem 0.8rem; border-radius:6px; color:#b45309; font-size:0.8rem;'>"
                 f"+{score_r2 - score_r1} نقطة تحسّن</span>"
                 f"</div></div>",
                 unsafe_allow_html=True,
@@ -573,11 +588,11 @@ def main():
                     st.markdown(
                         f"<div style='padding:0.6rem 0.8rem; margin:0.4rem 0; "
                         f"border-right: 4px solid {speaker_color}; "
-                        f"background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 8px;'>"
+                        f"background: #ffffff; border:1px solid #e2e8f0; border-radius: 8px;'>"
                         f"<strong style='color:{speaker_color}'>{seg['speaker']}</strong> "
-                        f"<span style='color:#475569; font-size:0.75rem'>"
+                        f"<span style='color:#94a3b8; font-size:0.75rem'>"
                         f"[{seg['start']:.1f}s - {seg['end']:.1f}s]</span><br/>"
-                        f"<span style='color:#e2e8f0;'>{seg['text']}</span></div>",
+                        f"<span style='color:#475569;'>{seg['text']}</span></div>",
                         unsafe_allow_html=True,
                     )
             else:
@@ -596,10 +611,10 @@ def main():
                     flagged = agent_dec.get("articles_flagged", 0)
                     clarifs = agent_dec.get("clarifications_requested", 0)
                     st.markdown(
-                        f"<div style='background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid #334155; "
+                        f"<div style='background:#e0f7fa; border:1px solid rgba(8,145,178,0.2); "
                         f"border-radius:10px; padding:0.8rem 1.2rem; margin-bottom:1rem;'>"
-                        f"<span style='color:#22d3ee; font-weight:700;'>🤖 قرارات الوكيل المستقلة:</span> "
-                        f"<span style='color:#e2e8f0;'>{dec_summary}</span>"
+                        f"<span style='color:#0891b2; font-weight:700;'>🤖 قرارات الوكيل المستقلة:</span> "
+                        f"<span style='color:#1e293b;'>{dec_summary}</span>"
                         f"</div>",
                         unsafe_allow_html=True,
                     )
@@ -631,8 +646,8 @@ def main():
                             icon = "✅" if applicability == "applicable" else "⚠️" if applicability == "uncertain" else "❌"
                             color = "#22c55e" if applicability == "applicable" else "#f59e0b" if applicability == "uncertain" else "#ef4444"
                             st.markdown(
-                                f"<div style='background:#0f172a; padding:0.5rem 0.8rem; margin:0.3rem 0; "
-                                f"border-radius:6px; border-right:3px solid {color};'>"
+                                f"<div style='background:#f8fafc; padding:0.5rem 0.8rem; margin:0.3rem 0; "
+                                f"border-radius:6px; border:1px solid #e2e8f0; border-right:3px solid {color};'>"
                                 f"{icon} {a['article']}<br/>"
                                 f"<span style='color:{color}; font-size:0.75rem;'>الثقة: {conf:.0%} — {a.get('reasoning', '')}</span>"
                                 f"</div>",
@@ -694,13 +709,13 @@ def main():
                 icon = level_icons.get(level, "📄")
 
                 st.markdown(f"""
-                <div style="background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid {color};
-                            border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1rem;">
+                <div style="background: #ffffff; border: 2px solid {color};
+                            border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <span style="font-size: 1.3rem;">{icon}</span>
                         <span style="font-size: 0.9rem; font-weight: 700; color: {color};">🤖 قرار مستقل — مستوى التفصيل: {label}</span>
                     </div>
-                    <div style="font-size: 0.75rem; color: #94a3b8; line-height: 1.8;">
+                    <div style="font-size: 0.75rem; color: #475569; line-height: 1.8;">
                         وكيل التلخيص قرّر بشكل مستقل أن هذه الجلسة تحتاج محضراً <b style="color:{color};">{label}</b> بناءً على:
                         <br>• عدد الكلمات: <b>{reasoning.get('word_count', '—')}</b>
                         | الادعاءات: <b>{reasoning.get('num_claims', '—')}</b>
@@ -726,12 +741,12 @@ def main():
                 st.markdown(f"**📊 تفصيل الدرجات {round_label}:**")
                 header = (
                     "<table style='width:100%; border-collapse:collapse; margin:0.5rem 0;'>"
-                    "<tr style='background:#0f172a;'>"
-                    "<th style='padding:8px; border:1px solid #334155; color:#94a3b8;'>المعيار</th>"
-                    "<th style='padding:8px; border:1px solid #334155; color:#94a3b8; width:55px;'>الوزن</th>"
-                    "<th style='padding:8px; border:1px solid #334155; color:#94a3b8; width:65px;'>الدرجة</th>"
-                    "<th style='padding:8px; border:1px solid #334155; color:#94a3b8; width:80px;'>المرجّح</th>"
-                    "<th style='padding:8px; border:1px solid #334155; color:#94a3b8;'>ملاحظة</th>"
+                    "<tr style='background:#f1f5f9;'>"
+                    "<th style='padding:8px; border:1px solid #e2e8f0; color:#475569;'>المعيار</th>"
+                    "<th style='padding:8px; border:1px solid #e2e8f0; color:#475569; width:55px;'>الوزن</th>"
+                    "<th style='padding:8px; border:1px solid #e2e8f0; color:#475569; width:65px;'>الدرجة</th>"
+                    "<th style='padding:8px; border:1px solid #e2e8f0; color:#475569; width:80px;'>المرجّح</th>"
+                    "<th style='padding:8px; border:1px solid #e2e8f0; color:#475569;'>ملاحظة</th>"
                     "</tr>"
                 )
                 rows = ""
@@ -743,15 +758,15 @@ def main():
                     weight = bd.get("weight", c.get("weight", 0))
                     weighted = bd.get("weighted_score", 0)
                     notes = cs.get("notes", "") if isinstance(cs, dict) else ""
-                    bar_color = "#22c55e" if raw >= 85 else "#f59e0b" if raw >= 60 else "#ef4444"
+                    bar_color = "#16a34a" if raw >= 85 else "#b45309" if raw >= 60 else "#dc2626"
                     rows += (
-                        f"<tr style='background:#1e293b;'>"
-                        f"<td style='padding:6px 8px; border:1px solid #334155;'>{c['name']}</td>"
-                        f"<td style='padding:6px 8px; border:1px solid #334155; text-align:center !important;'>{weight}%</td>"
-                        f"<td style='padding:6px 8px; border:1px solid #334155; text-align:center !important;'>"
+                        f"<tr style='background:#ffffff;'>"
+                        f"<td style='padding:6px 8px; border:1px solid #e2e8f0; color:#1e293b;'>{c['name']}</td>"
+                        f"<td style='padding:6px 8px; border:1px solid #e2e8f0; text-align:center !important; color:#475569;'>{weight}%</td>"
+                        f"<td style='padding:6px 8px; border:1px solid #e2e8f0; text-align:center !important;'>"
                         f"<span style='color:{bar_color}; font-weight:700;'>{raw}</span></td>"
-                        f"<td style='padding:6px 8px; border:1px solid #334155; text-align:center !important;'>{weighted}</td>"
-                        f"<td style='padding:6px 8px; border:1px solid #334155; color:#94a3b8; font-size:0.8rem;'>{notes}</td>"
+                        f"<td style='padding:6px 8px; border:1px solid #e2e8f0; text-align:center !important; color:#475569;'>{weighted}</td>"
+                        f"<td style='padding:6px 8px; border:1px solid #e2e8f0; color:#64748b; font-size:0.8rem;'>{notes}</td>"
                         f"</tr>"
                     )
                 st.markdown(header + rows + "</table>", unsafe_allow_html=True)
@@ -771,10 +786,10 @@ def main():
                     severity_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(issue.get("severity", ""), "⚪")
                     type_label = type_labels.get(issue.get("type", ""), issue.get("type", ""))
                     crit = criterion_labels.get(issue.get("criterion", ""), "")
-                    crit_badge = f" <span style='background:#334155; padding:1px 6px; border-radius:4px; font-size:0.7rem;'>{crit}</span>" if crit else ""
+                    crit_badge = f" <span style='background:#f1f5f9; border:1px solid #e2e8f0; padding:1px 6px; border-radius:4px; font-size:0.7rem; color:#475569;'>{crit}</span>" if crit else ""
                     st.markdown(
-                        f"<div style='background:#1e293b; padding:0.5rem 0.8rem; margin:0.3rem 0; "
-                        f"border-radius:6px; border-right:3px solid {border_color};'>"
+                        f"<div style='background:#f8fafc; padding:0.5rem 0.8rem; margin:0.3rem 0; "
+                        f"border-radius:6px; border:1px solid #e2e8f0; border-right:3px solid {border_color};'>"
                         f"{severity_icon} <strong>{type_label}</strong>{crit_badge}: {issue.get('description', '')}"
                         f"</div>",
                         unsafe_allow_html=True,
@@ -789,26 +804,26 @@ def main():
                 threshold = qa_round_1.get("quality_threshold", 85)
 
                 st.markdown(
-                    f"<div style='background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid #334155; "
-                    f"border-radius:12px; padding:1.2rem; margin:1rem 0;'>"
+                    f"<div style='background:#ffffff; border:1px solid #e2e8f0; "
+                    f"border-radius:12px; padding:1.2rem; margin:1rem 0; box-shadow:0 1px 3px rgba(0,0,0,0.04);'>"
                     f"<div style='display:flex; justify-content:space-around; text-align:center; flex-wrap:wrap;'>"
                     f"<div>"
-                    f"<div style='font-size:2.5rem; font-weight:700; color:#ef4444;'>{score_r1}%</div>"
-                    f"<div style='color:#94a3b8; font-size:0.85rem;'>الجولة الأولى</div>"
-                    f"<div style='color:#ef4444; font-size:0.8rem;'>❌ مرفوض</div>"
+                    f"<div style='font-size:2.5rem; font-weight:700; color:#dc2626;'>{score_r1}%</div>"
+                    f"<div style='color:#475569; font-size:0.85rem;'>الجولة الأولى</div>"
+                    f"<div style='color:#dc2626; font-size:0.8rem;'>❌ مرفوض</div>"
                     f"</div>"
                     f"<div style='display:flex; align-items:center;'>"
-                    f"<div style='font-size:1.8rem; color:#22d3ee;'>→ +{improvement} →</div>"
+                    f"<div style='font-size:1.8rem; color:#0891b2;'>→ +{improvement} →</div>"
                     f"</div>"
                     f"<div>"
-                    f"<div style='font-size:2.5rem; font-weight:700; color:#22c55e;'>{score_r2}%</div>"
-                    f"<div style='color:#94a3b8; font-size:0.85rem;'>الجولة الثانية</div>"
-                    f"<div style='color:#22c55e; font-size:0.8rem;'>✅ مقبول</div>"
+                    f"<div style='font-size:2.5rem; font-weight:700; color:#16a34a;'>{score_r2}%</div>"
+                    f"<div style='color:#475569; font-size:0.85rem;'>الجولة الثانية</div>"
+                    f"<div style='color:#16a34a; font-size:0.8rem;'>✅ مقبول</div>"
                     f"</div>"
                     f"<div style='display:flex; align-items:center;'>"
-                    f"<div style='background:#334155; padding:0.5rem 1rem; border-radius:8px;'>"
-                    f"<div style='color:#94a3b8; font-size:0.7rem;'>حد القبول</div>"
-                    f"<div style='color:#f59e0b; font-size:1.5rem; font-weight:700;'>{threshold}%</div>"
+                    f"<div style='background:#fffbeb; border:1px solid rgba(180,83,9,0.2); padding:0.5rem 1rem; border-radius:8px;'>"
+                    f"<div style='color:#64748b; font-size:0.7rem;'>حد القبول</div>"
+                    f"<div style='color:#b45309; font-size:1.5rem; font-weight:700;'>{threshold}%</div>"
                     f"</div></div>"
                     f"</div></div>",
                     unsafe_allow_html=True,
@@ -833,7 +848,7 @@ def main():
                         issues_list = fb.get("issues", [])
                         issues_text = "، ".join(issues_list) if isinstance(issues_list, list) and issues_list and isinstance(issues_list[0], str) else ""
                         st.markdown(
-                            f"<div style='background:#451a03; padding:0.5rem 0.8rem; margin:0.3rem 0; "
+                            f"<div style='background:#fff7ed; border:1px solid rgba(249,115,22,0.2); padding:0.5rem 0.8rem; margin:0.3rem 0; "
                             f"border-radius:6px; border-right:3px solid #f97316;'>"
                             f"✅ المراجعة → <strong>{target}</strong>"
                             f"{': ' + issues_text if issues_text else ''}</div>",
@@ -858,11 +873,11 @@ def main():
                     for cid, data in criteria_imp.items():
                         label = criterion_labels.get(cid, cid)
                         imp_html += (
-                            f"<div style='display:inline-block; background:#0f172a; border:1px solid #334155; "
+                            f"<div style='display:inline-block; background:#ffffff; border:1px solid #e2e8f0; "
                             f"border-radius:8px; padding:0.4rem 0.7rem; margin:0.2rem; text-align:center;'>"
-                            f"<div style='color:#94a3b8; font-size:0.7rem;'>{label}</div>"
-                            f"<span style='color:#ef4444;'>{data['before']}</span>"
-                            f" → <span style='color:#22c55e;'>{data['after']}</span>"
+                            f"<div style='color:#64748b; font-size:0.7rem;'>{label}</div>"
+                            f"<span style='color:#dc2626;'>{data['before']}</span>"
+                            f" → <span style='color:#16a34a;'>{data['after']}</span>"
                             f"</div>"
                         )
                     st.markdown(f"<div style='display:flex; flex-wrap:wrap; gap:0.2rem;'>{imp_html}</div>", unsafe_allow_html=True)
@@ -981,7 +996,7 @@ def main():
                     priority_badge = " <span style='background:#ef4444; color:#fff; padding:1px 5px; border-radius:4px; font-size:0.6rem;'>عاجل</span>"
 
                 st.markdown(
-                    f"<div style='background:#1e293b; padding:0.5rem 0.8rem; margin:0.2rem 0; "
+                    f"<div style='background:#f8fafc; border:1px solid #e2e8f0; padding:0.5rem 0.8rem; margin:0.2rem 0; "
                     f"border-radius:6px; border-left:3px solid {type_color};'>"
                     f"<strong>{agent_labels.get(sender, sender)}</strong> → "
                     f"<strong>{agent_labels.get(receiver, receiver)}</strong> "
