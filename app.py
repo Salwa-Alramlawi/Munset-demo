@@ -350,6 +350,26 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
+        # --- CTA Buttons (Primary Action — moved up) ---
+        col1, col2 = st.columns(2)
+
+        with col1:
+            demo_clicked = st.button(
+                "🎬 تشغيل العرض التجريبي",
+                type="primary",
+                use_container_width=True,
+                help="عرض تجريبي بجلسة محضّرة مسبقاً — لا يحتاج مفاتيح API",
+            )
+
+        with col2:
+            upload_mode = st.button(
+                "📁 رفع تسجيل صوتي",
+                use_container_width=True,
+                help="رفع تسجيل حقيقي لجلسة قضائية",
+            )
+
+        st.markdown("<br/>", unsafe_allow_html=True)
+
         # --- Stats ---
         st.markdown("""
         <div class="stats-row">
@@ -413,7 +433,7 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-        # --- Quality Loop Highlight ---
+        # --- Quality Loop Highlight (Closer — moved to bottom) ---
         st.markdown("""
         <div class="quality-highlight">
             <div class="qh-title">حلقة تحسين الجودة — قرار ذاتي بدون تدخل بشري</div>
@@ -434,25 +454,6 @@ def main():
             </p>
         </div>
         """, unsafe_allow_html=True)
-
-        # --- CTA Buttons ---
-        st.markdown("---")
-        col1, col2 = st.columns(2)
-
-        with col1:
-            demo_clicked = st.button(
-                "🎬 تشغيل العرض التجريبي",
-                type="primary",
-                use_container_width=True,
-                help="عرض تجريبي بجلسة محضّرة مسبقاً — لا يحتاج مفاتيح API",
-            )
-
-        with col2:
-            upload_mode = st.button(
-                "📁 رفع تسجيل صوتي",
-                use_container_width=True,
-                help="رفع تسجيل حقيقي لجلسة قضائية",
-            )
 
         if upload_mode:
             st.session_state["show_upload"] = True
