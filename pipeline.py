@@ -32,20 +32,60 @@ class MunsetPipeline:
         self.qa = QAAgent(self.protocol)
         self.chatbot = ChatbotAgent(self.protocol)
 
-    def run(self, audio_path: str, speaker_map: dict | None = None, on_step=None):
+    def transcribe_only(self, audio_path: str, on_step=None) -> dict:
+        """Phase 1: run only transcription + diarization so the UI can
+        discover the actual speaker count before the user names them."""
+        if on_step:
+            on_step("التفريغ الصوتي وتحديد المتحدثين", 1, 1)
+
+        msg = A2AMessage(
+            sender="pipeline", receiver="transcription_agent",
+            payload={"audio_path": audio_path, "speaker_map": None},
+        )
+        resp = self.protocol.send(msg)
+        transcript_data = resp.payload
+
+        speaker_ids = sorted({s["speaker_id"] for s in transcript_data["segments"]})
+        transcript_data["detected_speaker_ids"] = speaker_ids
+        transcript_data["num_speakers"] = len(speaker_ids)
+        return transcript_data
+
+    @staticmethod
+    def _format_transcript(segments):
+        lines = []
+        for s in segments:
+            timestamp = f"[{s['start']:.1f}s - {s['end']:.1f}s]"
+            lines.append(f"{timestamp} {s['speaker']}: {s['text']}")
+        return "\n".join(lines)
+
+    def run(self, audio_path: str | None = None, speaker_map: dict | None = None,
+            transcript_data: dict | None = None, on_step=None):
+        """Run the full pipeline.
+
+        Either provide `audio_path` (runs transcription inside) OR `transcript_data`
+        (skips transcription — used after two-phase flow where user named speakers
+        based on diarization output)."""
         results = {}
         total = 7
 
-        # --- Step 1: Transcription ---
-        if on_step:
-            on_step("التفريغ الصوتي وتحديد المتحدثين", 1, total)
+        # --- Step 1: Transcription (skipped if transcript_data already supplied) ---
+        if transcript_data is None:
+            if on_step:
+                on_step("التفريغ الصوتي وتحديد المتحدثين", 1, total)
 
-        msg1 = A2AMessage(
-            sender="pipeline", receiver="transcription_agent",
-            payload={"audio_path": audio_path, "speaker_map": speaker_map},
-        )
-        resp1 = self.protocol.send(msg1)
-        transcript_data = resp1.payload
+            msg1 = A2AMessage(
+                sender="pipeline", receiver="transcription_agent",
+                payload={"audio_path": audio_path, "speaker_map": speaker_map},
+            )
+            resp1 = self.protocol.send(msg1)
+            transcript_data = resp1.payload
+        elif speaker_map:
+            for seg in transcript_data["segments"]:
+                sid = seg.get("speaker_id")
+                if sid in speaker_map:
+                    seg["speaker"] = speaker_map[sid]
+            transcript_data["full_transcript"] = self._format_transcript(transcript_data["segments"])
+
         results["transcription"] = transcript_data
         full_transcript = transcript_data["full_transcript"]
 

@@ -323,13 +323,10 @@ def main():
         st.markdown("# ⚖️ مُنصِت")
         st.markdown("**منظومة وكلاء ذكية لتوثيق الجلسات القضائية**")
         st.divider()
-
-        st.markdown("### تخصيص المتحدثين")
-        speaker_map = {}
-        default_labels = ["القاضي", "المدعي", "المدعى عليه", "محامي المدعي", "محامي المدعى عليه"]
-        for i, default in enumerate(default_labels):
-            label = st.text_input(f"المتحدث {i+1}", value=default, key=f"spk_{i}")
-            speaker_map[f"SPEAKER_{i:02d}"] = label
+        st.info(
+            "ℹ️ سيتم اكتشاف عدد المتحدثين تلقائياً من التسجيل الصوتي، "
+            "ثم يُطلب منك تسميتهم قبل بدء التحليل."
+        )
 
     # ===============================
     # LANDING PAGE (before results)
@@ -479,36 +476,97 @@ def main():
         # --- Upload Section ---
         if st.session_state.get("show_upload"):
             st.markdown("---")
-            uploaded = st.file_uploader(
-                "📁 ارفع التسجيل الصوتي للجلسة",
-                type=["mp3", "wav", "m4a", "ogg", "flac", "mp4"],
-                help="يدعم: MP3, WAV, M4A, OGG, FLAC, MP4",
-            )
 
-            if uploaded is not None:
-                st.audio(uploaded)
+            # Phase 1: upload + run transcription only
+            if "transcript_data" not in st.session_state:
+                uploaded = st.file_uploader(
+                    "📁 ارفع التسجيل الصوتي للجلسة",
+                    type=["mp3", "wav", "m4a", "ogg", "flac", "mp4"],
+                    help="يدعم: MP3, WAV, M4A, OGG, FLAC, MP4",
+                )
 
-                if st.button("🚀 ابدأ التحليل", type="primary", use_container_width=True):
-                    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded.name)[1])
-                    tmp.write(uploaded.read())
-                    tmp.close()
+                if uploaded is not None:
+                    st.audio(uploaded)
 
-                    from pipeline import MunsetPipeline
+                    if st.button("🎙️ بدء التفريغ والتعرف على المتحدثين", type="primary", use_container_width=True):
+                        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded.name)[1])
+                        tmp.write(uploaded.read())
+                        tmp.close()
 
-                    pipeline = MunsetPipeline()
-                    progress = st.progress(0, text="جاري التجهيز...")
+                        from pipeline import MunsetPipeline
 
-                    def on_step(name, step, total):
-                        progress.progress(step / total, text=f"⏳ {name}...")
+                        pipeline = MunsetPipeline()
+                        with st.spinner("🎙️ جاري التفريغ واكتشاف المتحدثين..."):
+                            transcript_data = pipeline.transcribe_only(tmp.name)
 
-                    with st.spinner("الوكلاء يعملون..."):
-                        results = pipeline.run(tmp.name, speaker_map=speaker_map, on_step=on_step)
+                        st.session_state["transcript_data"] = transcript_data
+                        st.session_state["pipeline"] = pipeline
+                        os.unlink(tmp.name)
+                        st.rerun()
 
-                    progress.progress(1.0, text="✅ اكتمل التحليل!")
-                    st.session_state["results"] = results
-                    st.session_state["pipeline"] = pipeline
-                    os.unlink(tmp.name)
-                    st.rerun()
+            # Phase 2: user names the detected speakers, then continues
+            else:
+                transcript_data = st.session_state["transcript_data"]
+                pipeline = st.session_state["pipeline"]
+                detected = transcript_data.get("detected_speaker_ids", [])
+                num = len(detected)
+
+                st.success(f"✅ تم اكتشاف {num} متحدثين في التسجيل")
+                st.markdown("### تسمية المتحدثين")
+                st.caption("سمِّ كل متحدث حسب دوره في الجلسة (يمكنك سماع عينة من كلامه أدناه).")
+
+                default_suggestions = ["القاضي", "المدعي", "المدعى عليه", "محامي المدعي", "محامي المدعى عليه"]
+
+                speaker_map = {}
+                for i, sid in enumerate(detected):
+                    # Sample first utterance for this speaker
+                    sample = next(
+                        (s["text"] for s in transcript_data["segments"] if s.get("speaker_id") == sid),
+                        "",
+                    )
+                    sample_preview = sample[:90] + ("..." if len(sample) > 90 else "")
+                    default = default_suggestions[i] if i < len(default_suggestions) else f"متحدث {i+1}"
+
+                    cols = st.columns([1, 2])
+                    with cols[0]:
+                        label = st.text_input(
+                            f"المتحدث {i+1} ({sid})",
+                            value=default,
+                            key=f"spk_name_{sid}",
+                        )
+                    with cols[1]:
+                        st.markdown(
+                            f"<div style='background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; "
+                            f"padding:0.5rem 0.8rem; font-size:0.85rem; color:#475569; margin-top:1.7rem;'>"
+                            f"<b>عينة:</b> {sample_preview}</div>",
+                            unsafe_allow_html=True,
+                        )
+                    speaker_map[sid] = label
+
+                st.markdown("---")
+                col_a, col_b = st.columns([1, 1])
+                with col_a:
+                    if st.button("🚀 متابعة التحليل", type="primary", use_container_width=True):
+                        progress = st.progress(0, text="جاري التجهيز...")
+
+                        def on_step(name, step, total):
+                            progress.progress(step / total, text=f"⏳ {name}...")
+
+                        with st.spinner("الوكلاء يعملون..."):
+                            results = pipeline.run(
+                                transcript_data=transcript_data,
+                                speaker_map=speaker_map,
+                                on_step=on_step,
+                            )
+
+                        progress.progress(1.0, text="✅ اكتمل التحليل!")
+                        st.session_state["results"] = results
+                        del st.session_state["transcript_data"]
+                        st.rerun()
+                with col_b:
+                    if st.button("↩️ رفع تسجيل آخر", use_container_width=True):
+                        del st.session_state["transcript_data"]
+                        st.rerun()
 
     # ===============================
     # RESULTS PAGE
