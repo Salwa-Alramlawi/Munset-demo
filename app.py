@@ -312,6 +312,7 @@ st.markdown("""
         .cta-section { grid-template-columns: 1fr; }
         .hero-title { font-size: 2rem; }
         .stats-row { gap: 1rem; }
+        .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -366,6 +367,29 @@ def main():
             )
 
         st.markdown("<br/>", unsafe_allow_html=True)
+
+        # --- How it works (3 steps) ---
+        st.markdown("""
+        <div style="display:flex; justify-content:center; align-items:center; gap:1rem; margin:1.5rem 0; flex-wrap:wrap;">
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem 1.5rem; text-align:center; min-width:180px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                <div style="font-size:2rem;">📁</div>
+                <div style="font-size:0.9rem; font-weight:700; color:#1e293b; margin-top:0.3rem;">1. ارفع التسجيل</div>
+                <div style="font-size:0.72rem; color:#64748b;">MP3 / WAV / M4A</div>
+            </div>
+            <div style="font-size:1.5rem; color:#0891b2;">→</div>
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem 1.5rem; text-align:center; min-width:180px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                <div style="font-size:2rem;">🤖</div>
+                <div style="font-size:0.9rem; font-weight:700; color:#1e293b; margin-top:0.3rem;">2. الوكلاء يعملون</div>
+                <div style="font-size:0.72rem; color:#64748b;">5 وكلاء × حلقة جودة</div>
+            </div>
+            <div style="font-size:1.5rem; color:#0891b2;">→</div>
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem 1.5rem; text-align:center; min-width:180px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                <div style="font-size:2rem;">📝</div>
+                <div style="font-size:0.9rem; font-weight:700; color:#1e293b; margin-top:0.3rem;">3. محضر جاهز</div>
+                <div style="font-size:0.72rem; color:#64748b;">تحليل + ملخص + مساعد</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
         # --- Stats ---
         st.markdown("""
@@ -590,66 +614,58 @@ def main():
                     del st.session_state["chat_messages"]
                 st.rerun()
 
-        # --- Quality Loop Summary (always visible at top) ---
+        # --- Quick Summary Cards (at-a-glance) ---
         qa_rounds = results.get("qa_rounds", 1)
         qa_round_1 = results.get("qa_round_1", {})
         qa_final = results.get("qa_review", {})
+        analysis = results.get("legal_analysis", {})
+        transcript_data = results.get("transcription", {})
 
+        score_final = qa_final.get("completeness_score", 0)
+        score_color = "#16a34a" if score_final >= 85 else "#b45309" if score_final >= 60 else "#dc2626"
+        num_segments = len(transcript_data.get("segments", []))
+        case_type = analysis.get("case_type", "—")
+
+        st.markdown(f"""
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.8rem; margin:1rem 0;">
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                <div style="font-size:1.8rem; font-weight:700; color:{score_color};">{score_final}%</div>
+                <div style="font-size:0.75rem; color:#64748b;">جودة المحضر</div>
+            </div>
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                <div style="font-size:1.8rem; font-weight:700; color:#0891b2;">{qa_rounds}</div>
+                <div style="font-size:0.75rem; color:#64748b;">جولات المراجعة</div>
+            </div>
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                <div style="font-size:1.8rem; font-weight:700; color:#7c3aed;">{num_segments}</div>
+                <div style="font-size:0.75rem; color:#64748b;">مقطع صوتي</div>
+            </div>
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                <div style="font-size:1rem; font-weight:700; color:#1e293b; line-height:1.5;">{case_type[:30]}</div>
+                <div style="font-size:0.75rem; color:#64748b;">نوع القضية</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Quality Loop Banner (if multiple rounds)
         if qa_rounds >= 2 and qa_round_1:
             score_r1 = qa_round_1.get("completeness_score", 0)
             score_r2 = qa_final.get("completeness_score", 0)
             st.markdown(
-                f"<div style='background:#ffffff; border:1px solid #e2e8f0; "
-                f"border-radius:12px; padding:1rem 1.5rem; margin:0.5rem 0 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.04);'>"
-                f"<div style='display:flex; align-items:center; justify-content:center; gap:1.5rem; flex-wrap:wrap;'>"
-                f"<span style='color:#475569; font-size:0.9rem;'>حلقة الجودة:</span>"
-                f"<span style='color:#dc2626; font-size:1.3rem; font-weight:700;'>❌ {score_r1}%</span>"
-                f"<span style='color:#0891b2; font-size:1.2rem;'>→ ملاحظات + إعادة إنتاج →</span>"
-                f"<span style='color:#16a34a; font-size:1.3rem; font-weight:700;'>✅ {score_r2}%</span>"
-                f"<span style='background:#fffbeb; border:1px solid rgba(180,83,9,0.2); padding:0.3rem 0.8rem; border-radius:6px; color:#b45309; font-size:0.8rem;'>"
-                f"+{score_r2 - score_r1} نقطة تحسّن</span>"
+                f"<div style='background:#f0fdf4; border:1px solid rgba(22,163,74,0.2); "
+                f"border-radius:10px; padding:0.8rem 1.2rem; margin-bottom:1rem;'>"
+                f"<div style='display:flex; align-items:center; justify-content:center; gap:1rem; flex-wrap:wrap;'>"
+                f"<span style='color:#475569; font-size:0.85rem;'>🔄 حلقة الجودة:</span>"
+                f"<span style='color:#dc2626; font-weight:700;'>❌ {score_r1}%</span>"
+                f"<span style='color:#0891b2;'>→</span>"
+                f"<span style='color:#16a34a; font-weight:700;'>✅ {score_r2}%</span>"
+                f"<span style='background:#ffffff; border:1px solid #e2e8f0; padding:0.2rem 0.6rem; border-radius:6px; color:#b45309; font-size:0.8rem;'>"
+                f"+{score_r2 - score_r1} تحسّن</span>"
                 f"</div></div>",
                 unsafe_allow_html=True,
             )
 
-        st.markdown("---")
-
-        # --- Agent flow ---
-        flow_cols = st.columns([2, 1, 2, 1, 2, 1, 2, 1, 2])
-        agents_flow = [
-            ("🎙️", "التفريغ", "Whisper + pyannote"),
-            None,
-            ("⚖️", "التحليل", "Claude API"),
-            None,
-            ("📝", "المحضر", "Claude API"),
-            None,
-            ("✅", "المراجعة", "7 معايير"),
-            None,
-            ("💬", "المساعد", "Claude API"),
-        ]
-        for i, col in enumerate(flow_cols):
-            with col:
-                if agents_flow[i] is not None:
-                    icon, name, tech = agents_flow[i]
-                    st.markdown(
-                        f"<div class='agent-flow-card'>"
-                        f"<div class='icon'>{icon}</div>"
-                        f"<div class='name'>{name}</div>"
-                        f"<div class='tech'>{tech}</div>"
-                        f"</div>",
-                        unsafe_allow_html=True,
-                    )
-                else:
-                    st.markdown("<div class='flow-arrow'>→</div>", unsafe_allow_html=True)
-
-        st.markdown(
-            "<div style='text-align:center; padding:0.2rem; color:#f97316; font-size:0.75rem;'>"
-            "← ← ملاحظات مُستهدفة (وكيل المراجعة → التلخيص / التحليل) ← ←"
-            "</div>",
-            unsafe_allow_html=True,
-        )
-
-        st.markdown("---")
+        st.markdown("")
 
         # --- Tabs ---
         tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
@@ -1006,11 +1022,25 @@ def main():
 
         # -- Tab 5: Chatbot --
         with tab5:
-            st.markdown("### 💬 اسأل عن الجلسة")
+            st.markdown("### 💬 المساعد التفاعلي")
 
             if "chat_messages" not in st.session_state:
                 st.session_state["chat_messages"] = []
 
+            # Welcome message if no chat yet
+            if not st.session_state["chat_messages"]:
+                st.markdown(
+                    "<div style='background:#e0f7fa; border:1px solid rgba(8,145,178,0.2); "
+                    "border-radius:12px; padding:1rem 1.2rem; margin-bottom:1rem; text-align:center;'>"
+                    "<div style='font-size:1.5rem; margin-bottom:0.3rem;'>🤖</div>"
+                    "<div style='font-size:0.95rem; font-weight:700; color:#0891b2;'>مرحباً! أنا المساعد التفاعلي</div>"
+                    "<div style='font-size:0.8rem; color:#475569; margin-top:0.3rem;'>"
+                    "اسألني أي سؤال عن الجلسة — الادعاءات، الدفوع، المواد النظامية، أو أي تفصيل آخر."
+                    "</div></div>",
+                    unsafe_allow_html=True,
+                )
+
+            # Chat history
             for msg in st.session_state["chat_messages"]:
                 css_class = "chat-user" if msg["role"] == "user" else "chat-bot"
                 prefix = "👤" if msg["role"] == "user" else "🤖"
@@ -1019,6 +1049,11 @@ def main():
                     unsafe_allow_html=True,
                 )
 
+            # Quick questions
+            st.markdown(
+                "<div style='font-size:0.8rem; color:#64748b; margin:0.5rem 0 0.3rem;'>أسئلة سريعة:</div>",
+                unsafe_allow_html=True,
+            )
             quick_qs = ["ما هي طلبات المدعي؟", "ما موقف المدعى عليه؟", "ما المواد النظامية؟", "لخّص الجلسة"]
             cols_q = st.columns(len(quick_qs))
             selected_q = None
