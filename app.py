@@ -579,6 +579,21 @@ def main():
             analysis = results.get("legal_analysis", {})
 
             if not analysis.get("parse_error"):
+                # Agent decisions box
+                agent_dec = analysis.get("agent_decisions", {})
+                if agent_dec:
+                    dec_summary = agent_dec.get("decision_summary", "")
+                    flagged = agent_dec.get("articles_flagged", 0)
+                    clarifs = agent_dec.get("clarifications_requested", 0)
+                    st.markdown(
+                        f"<div style='background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid #334155; "
+                        f"border-radius:10px; padding:0.8rem 1.2rem; margin-bottom:1rem;'>"
+                        f"<span style='color:#22d3ee; font-weight:700;'>🤖 قرارات الوكيل المستقلة:</span> "
+                        f"<span style='color:#e2e8f0;'>{dec_summary}</span>"
+                        f"</div>",
+                        unsafe_allow_html=True,
+                    )
+
                 col_a, col_b = st.columns(2)
 
                 with col_a:
@@ -598,9 +613,23 @@ def main():
                         st.markdown(f"- {e}")
 
                 with col_b:
-                    st.markdown("**📖 المواد النظامية:**")
+                    st.markdown("**📖 المواد النظامية (مع تقييم الانطباق):**")
                     for a in analysis.get("legal_articles", []):
-                        st.markdown(f"- {a}")
+                        if isinstance(a, dict):
+                            conf = a.get("confidence", 1.0)
+                            applicability = a.get("applicability", "applicable")
+                            icon = "✅" if applicability == "applicable" else "⚠️" if applicability == "uncertain" else "❌"
+                            color = "#22c55e" if applicability == "applicable" else "#f59e0b" if applicability == "uncertain" else "#ef4444"
+                            st.markdown(
+                                f"<div style='background:#0f172a; padding:0.5rem 0.8rem; margin:0.3rem 0; "
+                                f"border-radius:6px; border-right:3px solid {color};'>"
+                                f"{icon} {a['article']}<br/>"
+                                f"<span style='color:{color}; font-size:0.75rem;'>الثقة: {conf:.0%} — {a.get('reasoning', '')}</span>"
+                                f"</div>",
+                                unsafe_allow_html=True,
+                            )
+                        else:
+                            st.markdown(f"- {a}")
 
                     st.markdown("**📌 طلبات المدعي:**")
                     for r in analysis.get("requests", {}).get("plaintiff", []):
@@ -615,6 +644,19 @@ def main():
                         for x in analysis["contradictions"]:
                             st.warning(x)
 
+                # Clarification needed
+                clarifications = analysis.get("clarification_needed", [])
+                if clarifications:
+                    st.markdown("---")
+                    st.markdown("**🔄 طلبات توضيح أرسلها الوكيل:**")
+                    for q in clarifications:
+                        st.markdown(
+                            f"<div style='background:#1a1033; padding:0.5rem 0.8rem; margin:0.3rem 0; "
+                            f"border-radius:6px; border-right:3px solid #a855f7;'>"
+                            f"❓ {q}</div>",
+                            unsafe_allow_html=True,
+                        )
+
                 # Timeline
                 timeline = analysis.get("timeline", [])
                 if timeline:
@@ -628,6 +670,37 @@ def main():
         # -- Tab 3: Summary --
         with tab3:
             st.markdown("### محضر الجلسة والملخص التنفيذي")
+
+            # --- Agent Decision: Detail Level ---
+            detail_decision = results.get("detail_decision")
+            if detail_decision:
+                level = detail_decision.get("level", "standard")
+                label = detail_decision.get("label", "قياسي")
+                reasoning = detail_decision.get("reasoning", {})
+
+                level_colors = {"brief": "#f59e0b", "standard": "#3b82f6", "detailed": "#8b5cf6"}
+                level_icons = {"brief": "📋", "standard": "📄", "detailed": "📑"}
+                color = level_colors.get(level, "#3b82f6")
+                icon = level_icons.get(level, "📄")
+
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid {color};
+                            border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="font-size: 1.3rem;">{icon}</span>
+                        <span style="font-size: 0.9rem; font-weight: 700; color: {color};">🤖 قرار مستقل — مستوى التفصيل: {label}</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; line-height: 1.8;">
+                        وكيل التلخيص قرّر بشكل مستقل أن هذه الجلسة تحتاج محضراً <b style="color:{color};">{label}</b> بناءً على:
+                        <br>• عدد الكلمات: <b>{reasoning.get('word_count', '—')}</b>
+                        | الادعاءات: <b>{reasoning.get('num_claims', '—')}</b>
+                        | الدفوع: <b>{reasoning.get('num_defenses', '—')}</b>
+                        | التناقضات: <b>{reasoning.get('num_contradictions', '—')}</b>
+                        <br>• درجة التعقيد: <b style="color:{color};">{reasoning.get('complexity_score', '—')}</b> / 6
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
             st.markdown(results.get("summary", ""))
 
         # -- Tab 4: QA Review --

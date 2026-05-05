@@ -159,6 +159,7 @@ class MunsetPipeline:
             DEMO_TRANSCRIPT_SEGMENTS, DEMO_FULL_TRANSCRIPT,
             DEMO_LEGAL_ANALYSIS, DEMO_SUMMARY, DEMO_QA_REVIEW_ROUND1,
             DEMO_LEGAL_ANALYSIS_V2, DEMO_SUMMARY_V2, DEMO_QA_REVIEW_ROUND2,
+            DEMO_DETAIL_DECISION,
         )
 
         results = {}
@@ -293,6 +294,7 @@ class MunsetPipeline:
         results["summary"] = DEMO_SUMMARY_V2
         results["qa_review"] = DEMO_QA_REVIEW_ROUND2
         results["qa_rounds"] = 2
+        results["detail_decision"] = DEMO_DETAIL_DECISION
         results["chatbot_ready"] = True
         results["a2a_log"] = self.protocol.get_log()
         results["a2a_stats"] = self.protocol.get_stats()
