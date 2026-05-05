@@ -148,6 +148,11 @@ st.markdown("""
         background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3);
         border-radius: 6px; padding: 0.15rem 0.5rem; font-size: 0.6rem; color: #22d3ee;
     }
+    .agent-showcase-card .agent-agentic {
+        margin-top: 0.5rem; padding: 0.3rem 0.5rem;
+        background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3);
+        border-radius: 6px; font-size: 0.62rem; color: #a78bfa; line-height: 1.5;
+    }
 
     /* ===== QUALITY LOOP HIGHLIGHT ===== */
     .quality-highlight {
@@ -326,30 +331,35 @@ def main():
                 <div class="agent-name">التفريغ الصوتي</div>
                 <div class="agent-desc">تفريغ الصوت وتحديد المتحدثين</div>
                 <div class="agent-tech-badge">Groq Whisper + pyannote.ai</div>
+                <div class="agent-agentic">🤖 يطلب توضيحاً من المستخدم عند غموض هوية المتحدث</div>
             </div>
             <div class="agent-showcase-card">
                 <div class="agent-icon">⚖️</div>
                 <div class="agent-name">التحليل القانوني</div>
                 <div class="agent-desc">استخراج الادعاءات والدفوع والأدلة</div>
                 <div class="agent-tech-badge">Claude API</div>
+                <div class="agent-agentic">🤖 يقيّم ثقة انطباق كل مادة نظامية ويطلب توضيح للعبارات الغامضة</div>
             </div>
             <div class="agent-showcase-card">
                 <div class="agent-icon">📝</div>
                 <div class="agent-name">إنشاء المحضر</div>
                 <div class="agent-desc">محضر رسمي + ملخص تنفيذي</div>
                 <div class="agent-tech-badge">Claude API</div>
+                <div class="agent-agentic">🤖 يقرر مستوى التفصيل (مختصر/قياسي/تفصيلي) حسب تعقيد الجلسة</div>
             </div>
             <div class="agent-showcase-card">
                 <div class="agent-icon">✅</div>
                 <div class="agent-name">مراجعة الجودة</div>
                 <div class="agent-desc">تقييم مُهيكل + قرار ذاتي</div>
                 <div class="agent-tech-badge">7 معايير مُوزّنة</div>
+                <div class="agent-agentic">🤖 يقبل أو يرفض المحضر ذاتياً ويُرسل ملاحظات للوكلاء الآخرين</div>
             </div>
             <div class="agent-showcase-card">
                 <div class="agent-icon">💬</div>
                 <div class="agent-name">المساعد التفاعلي</div>
                 <div class="agent-desc">سؤال وجواب على المحضر</div>
                 <div class="agent-tech-badge">Claude API</div>
+                <div class="agent-agentic">🤖 يجيب من سياق الجلسة ويحدد إن كان السؤال خارج النطاق</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
