@@ -20,12 +20,19 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
 
     * { font-family: 'Tajawal', sans-serif; }
-    html, body, .stApp {
+    html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
         direction: rtl;
         background: #f8fafc !important;
+        color: #1e293b !important;
     }
-    .main .block-container { direction: rtl; text-align: right; max-width: 1200px; }
-    .stApp > header { background: #ffffff !important; }
+    .main .block-container { direction: rtl; text-align: right; max-width: 1200px; background: transparent !important; }
+    .stApp > header, [data-testid="stHeader"] { background: #ffffff !important; }
+    [data-testid="stSidebar"], [data-testid="stSidebarContent"] { background: #ffffff !important; }
+    [data-testid="stSidebar"] * { color: #1e293b !important; }
+    [data-testid="stSidebar"] .agent-agentic { color: #7c3aed !important; }
+    [data-testid="stSidebar"] .agent-tech-badge { color: #0891b2 !important; }
+    .stMarkdown, .stMarkdown p, .stMarkdown li, .stMarkdown span { color: #1e293b !important; }
+    [data-testid="stMarkdownContainer"] { color: #1e293b; }
 
     .stMarkdown, .stText, .stAlert, .stJson,
     .stTextInput > div, .stTextArea > div,
